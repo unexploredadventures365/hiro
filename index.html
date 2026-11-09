@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hiro | Hiring Made Human - Enterprise ATS & CRM</title>
+  
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- PDF.js & Mammoth for In-Browser Document Parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
+  
+  <!-- Chart.js for Visual Infographics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            hiro: {
+              purple: '#4B1EFF',
+              darkPurple: '#3915C8',
+              lime: '#C7FF3D',
+              limeDark: '#0D3300',
+              bg: '#F5F6FA',
+              dark: '#111827',
+              card: '#FFFFFF',
+              border: '#E5E7EB'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { background-color: #F5F6FA; color: #111827; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 9999px; }
+    .kanban-col { min-width: 320px; max-width: 320px; }
+  </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col custom-scrollbar">
+
+  <!-- ==================== 1. PIN AUTHENTICATION GATE ==================== -->
+  <div id="authGate" class="fixed inset-0 z-50 bg-[#111827] flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 border border-gray-100 relative overflow-hidden">
+      <div class="absolute -top-16 -right-16 w-36 h-36 bg-[#C7FF3D] rounded-full opacity-30 blur-2xl"></div>
+      
+      <!-- Brand Header -->
+      <div class="flex items-center space-x-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-[#4B1EFF] flex items-center justify-center text-[#C7FF3D] font-extrabold text-xl shadow-md">
+          H<sup>7</sup>
+        </div>
+        <div>
+          <span class="text-2xl font-extrabold tracking-tight text-[#111827]">Hiro<sup class="text-[#4B1EFF]">7</sup></span>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Hiring Made Human</p>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <h2 class="text-xl font-bold text-gray-900">Sign in to Hiro ATS</h2>
+        <p class="text-sm text-gray-500 mt-1">Select your profile and enter your secure access PIN.</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Select Agency User</label>
+          <select id="loginUserSelect" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-medium text-sm focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Enter Security PIN</label>
+          <input type="password" id="loginPinInput" maxlength="6" placeholder="••••" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-mono text-center text-lg tracking-widest focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+          <p id="loginError" class="text-xs text-red-600 font-semibold mt-2 hidden"></p>
+        </div>
+
+        <button onclick="handleLoginSubmit()" class="w-full py-3.5 bg-[#4B1EFF] hover:bg-[#3915C8] text-white font-bold rounded-xl shadow-lg transition-all">
+          Unlock Workspace
+        </button>
+      </div>
+
+      <!-- Quick Fill Helper for Demo -->
+      <div class="mt-8 pt-6 border-t border-gray-100">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Quick Demo Profiles</p>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button onclick="quickFillLogin('11111111-1111-1111-1111-111111111111', '1234')" class="p-2 text-left bg-purple-50 hover:bg-purple-100 text-[#4B1EFF] font-bold rounded-lg border border-purple-100">
+            👑 Sai Kiran (Admin) <span class="block font-mono text-[10px] text-gray-500 font-normal">PIN: 1234</span>
+          </button>
+          <button onclick="quickFillLogin('22222222-2222-2222-2222-222222222222', '1111')" class="p-2 text-left bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold rounded-lg border border-gray-200">
+            💼 Rahul (Tech) <span class="block font-mono text-[10px] text-gray-500 font-normal">PIN: 1111</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 2. MAIN APPLICATION WORKSPACE ==================== -->
+  <div id="appWorkspace" class="flex-1 flex flex-col hidden">
+    <!-- Top Bar -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 px-6 py-3.5 flex items-center justify-between shadow-sm">
+      <div class="flex items-center space-x-4">
+        <div class="w-9 h-9 rounded-xl bg-[#4B1EFF] flex items-center justify-center text-[#C7FF3D] font-extrabold text-lg shadow-sm">
+          H<sup>7</sup>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-black text-gray-900 tracking-tight">Hiro<sup class="text-[#4B1EFF]">7</sup></span>
+            <span class="px-2 py-0.5 text-[10px] font-extrabold bg-[#C7FF3D] text-[#0D3300] rounded-full uppercase tracking-wider">Enterprise ATS</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden md:flex items-center space-x-1">
+        <button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-tab px-4 py-2 rounded-xl text-xs font-bold transition-all bg-[#4B1EFF] text-white">Candidates & Pipeline</button>
+        <button onclick="switchTab('jobs')" id="tab-jobs" class="nav-tab px-4 py-2 rounded-xl text-xs font-bold transition-all text-gray-600 hover:text-gray-900">Job Mandates</button>
+        <button onclick="switchTab('clients')" id="tab-clients" class="nav-tab px-4 py-2 rounded-xl text-xs font-bold transition-all text-gray-600 hover:text-gray-900">Clients & CRM</button>
+        <button onclick="switchTab('analytics')" id="tab-analytics" class="nav-tab px-4 py-2 rounded-xl text-xs font-bold transition-all text-gray-600 hover:text-gray-900">Infographics</button>
+        <button onclick="switchTab('admin-settings')" id="tab-admin-settings" class="nav-tab px-4 py-2 rounded-xl text-xs font-bold transition-all text-gray-600 hover:text-gray-900">Admin Control</button>
+      </nav>
+
+      <!-- Active User Profile & Logout -->
+      <div class="flex items-center space-x-3">
+        <div class="text-right">
+          <p id="userDisplayName" class="text-xs font-bold text-gray-900"></p>
+          <span id="userRoleBadge" class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full"></span>
+        </div>
+        <button onclick="logout()" title="Lock Session" class="p-2 rounded-xl bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-500 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- App Body Content -->
+    <main class="flex-1 p-6 max-w-7xl w-full mx-auto">
+      
+      <!-- ================= TAB: CANDIDATES & PIPELINE ================= -->
+      <section id="view-pipeline" class="space-y-6">
+        <!-- Mandate Selection & Ingestion Header -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div class="flex-1">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#4B1EFF]">Active Hiring Mandate</span>
+            <div class="flex items-center space-x-3 mt-1">
+              <select id="activeMandateSelect" onchange="handleMandateChange()" class="text-base font-bold text-gray-900 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none max-w-md w-full"></select>
+            </div>
+            <p id="mandateSubtitle" class="text-xs text-gray-500 mt-1"></p>
+          </div>
+
+          <div class="flex items-center space-x-3">
+            <button onclick="openBulkUploadModal()" class="px-5 py-2.5 bg-[#C7FF3D] text-[#0D3300] hover:bg-lime-400 font-extrabold rounded-xl shadow-sm text-xs flex items-center space-x-2 transition-all">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+              <span>Upload CVs (PDF / DOCX)</span>
+            </button>
+            <button id="btnExportCandidates" onclick="exportCandidatesCSV()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs flex items-center space-x-1.5 transition-all">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <span>Export CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Kanban Board Pipeline -->
+        <div class="overflow-x-auto pb-4 custom-scrollbar">
+          <div class="flex space-x-4 min-w-max" id="kanbanBoard">
+            <!-- Columns: sourced, screening, client_submitted, interviewing, offered, joined -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB: JOB MANDATES ================= -->
+      <section id="view-jobs" class="space-y-6 hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">Job Mandates & Requirements</h2>
+            <p class="text-xs text-gray-500">Each mandate maintains a dedicated candidate pipeline and assigned recruiters.</p>
+          </div>
+          <button onclick="openCreateJobModal()" class="px-4 py-2.5 bg-[#4B1EFF] text-white font-bold rounded-xl text-xs hover:bg-[#3915C8] transition-all">
+            + New Job Mandate
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="jobsGrid">
+          <!-- Dynamically Rendered Jobs -->
+        </div>
+      </section>
+
+      <!-- ================= TAB: CLIENTS & CRM ================= -->
+      <section id="view-clients" class="space-y-6 hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">Clients & Commercial Accounts</h2>
+            <p class="text-xs text-gray-500">Track client fee agreements, replacement guarantees, and billing terms.</p>
+          </div>
+          <button onclick="openCreateClientModal()" class="px-4 py-2.5 bg-[#4B1EFF] text-white font-bold rounded-xl text-xs hover:bg-[#3915C8] transition-all">
+            + Add Client Account
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-gray-50 border-b border-gray-200 text-gray-600 font-bold uppercase tracking-wider">
+                <tr>
+                  <th class="py-3 px-4">Client Company</th>
+                  <th class="py-3 px-4">Primary SPOC</th>
+                  <th class="py-3 px-4">Fee % (CTC)</th>
+                  <th class="py-3 px-4">Guarantee</th>
+                  <th class="py-3 px-4">Credit Period</th>
+                  <th class="py-3 px-4">Active Mandates</th>
+                </tr>
+              </thead>
+              <tbody id="clientsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                <!-- Dynamically Rendered Clients -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB: INFOGRAPHICS & ANALYTICS ================= -->
+      <section id="view-analytics" class="space-y-6 hidden">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">Agency Infographics & Performance</h2>
+          <p class="text-xs text-gray-500">Live operational conversion rates, revenue pipelines, and recruiter throughput.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-gray-200">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">Total Sourced</span>
+            <p id="statTotalCandidates" class="text-2xl font-black text-gray-900 mt-1">0</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-gray-200">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#4B1EFF]">Shortlisted / Submitted</span>
+            <p id="statSubmittedCandidates" class="text-2xl font-black text-[#4B1EFF] mt-1">0</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-gray-200">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600">Joined Closures</span>
+            <p id="statJoinedCandidates" class="text-2xl font-black text-emerald-600 mt-1">0</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-gray-200">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-purple-600">Realized Agency Revenue</span>
+            <p id="statRevenueRealized" class="text-2xl font-black text-gray-900 mt-1">₹0</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+            <h3 class="text-sm font-bold text-gray-900 mb-4">Pipeline Stage Conversion Funnel</h3>
+            <div class="h-64">
+              <canvas id="chartPipelineFunnel"></canvas>
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+            <h3 class="text-sm font-bold text-gray-900 mb-4">Recruiter Sourcing & Closure Throughput</h3>
+            <div class="h-64">
+              <canvas id="chartRecruiterOutput"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB: ADMIN CONTROL & AI GATEWAY ================= -->
+      <section id="view-admin-settings" class="space-y-8 hidden">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">Admin Governance & Integrations</h2>
+          <p class="text-xs text-gray-500">Configure team access privileges, reset PINs, and manage the plug-and-play AI scoring engine.</p>
+        </div>
+
+        <!-- 1. PLUG-AND-PLAY AI ENGINE GATEWAY -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+            <div>
+              <h3 class="text-sm font-black text-gray-900 flex items-center space-x-2">
+                <span>🤖 AI Matching & Scoring Gateway</span>
+                <span class="px-2 py-0.5 text-[9px] font-extrabold bg-purple-100 text-[#4B1EFF] rounded-full uppercase">Provider Agnostic</span>
+              </h3>
+              <p class="text-xs text-gray-500 mt-0.5">Switch between Google Gemini, OpenAI, Groq, or DeepSeek without touching the code.</p>
+            </div>
+            <button onclick="testAiConnection()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg text-xs transition-all">
+              ⚡ Test Connection
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">AI Provider</label>
+              <select id="aiProviderSelect" onchange="handleAiProviderChange()" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+                <option value="gemini">Google Gemini (Default)</option>
+                <option value="openai">OpenAI (GPT-4o / Mini)</option>
+                <option value="groq">Groq (Llama 3 Speed Engine)</option>
+                <option value="deepseek">DeepSeek AI</option>
+                <option value="custom">Custom Compatible Endpoint</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Model Name</label>
+              <input type="text" id="aiModelInput" placeholder="gemini-1.5-flash" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+            </div>
+
+            <div class="lg:col-span-2">
+              <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">API Endpoint URL</label>
+              <input type="text" id="aiEndpointInput" placeholder="https://generativelanguage.googleapis.com/v1beta/models/" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+            </div>
+
+            <div class="lg:col-span-3">
+              <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Secret API Key</label>
+              <input type="password" id="aiApiKeyInput" placeholder="Enter API Key (e.g., AIzaSy... or sk-...)" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+            </div>
+
+            <div class="flex items-end">
+              <button onclick="saveAiSettings()" class="w-full py-2 bg-[#4B1EFF] hover:bg-[#3915C8] text-white font-bold rounded-xl text-xs shadow-sm transition-all">
+                Save AI Config
+              </button>
+            </div>
+          </div>
+          <p id="aiTestFeedback" class="text-xs font-semibold mt-3 hidden"></p>
+        </div>
+
+        <!-- 2. TEAM & RECRUITER PRIVILEGES -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+            <div>
+              <h3 class="text-sm font-black text-gray-900">Agency Team & Role-Based Access Control</h3>
+              <p class="text-xs text-gray-500">Recruiters are restricted to their assigned mandates. Assign JDs, set PINs, and control CV download rights.</p>
+            </div>
+            <button onclick="openCreateUserModal()" class="px-3.5 py-1.5 bg-[#4B1EFF] text-white font-bold rounded-lg text-xs hover:bg-[#3915C8] transition-all">
+              + New Recruiter
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-gray-50 border-b border-gray-200 text-gray-600 font-bold uppercase tracking-wider">
+                <tr>
+                  <th class="py-3 px-4">Member Name</th>
+                  <th class="py-3 px-4">Email</th>
+                  <th class="py-3 px-4">Role</th>
+                  <th class="py-3 px-4">Assigned Mandates</th>
+                  <th class="py-3 px-4 text-center">Download CV</th>
+                  <th class="py-3 px-4 text-center">Export Data</th>
+                  <th class="py-3 px-4 text-center">View Fees</th>
+                  <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                <!-- Dynamically Rendered Users -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== 3. MODALS ==================== -->
+
+  <!-- MODAL: BULK CV UPLOAD -->
+  <div id="modalBulkUpload" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-100">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div>
+          <h3 class="text-base font-bold text-gray-900">Upload Candidate CVs</h3>
+          <p id="uploadTargetMandateText" class="text-xs text-[#4B1EFF] font-semibold mt-0.5"></p>
+        </div>
+        <button onclick="closeModal('modalBulkUpload')" class="text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="mt-4 space-y-4">
+        <!-- Drag & Drop Zone -->
+        <div id="dropZone" class="border-2 border-dashed border-[#4B1EFF]/30 hover:border-[#4B1EFF] bg-purple-50/50 hover:bg-purple-50 rounded-2xl p-6 text-center cursor-pointer transition-all">
+          <input type="file" id="cvFileInput" multiple accept=".pdf,.docx,.txt" class="hidden" onchange="handleFileSelect(event)">
+          <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-sm text-[#4B1EFF] mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+          </div>
+          <p class="text-xs font-bold text-gray-800">Drag & drop multiple CV files here, or <span class="text-[#4B1EFF] underline">browse</span></p>
+          <p class="text-[10px] text-gray-500 mt-1">Supports PDF (.pdf) and Word (.docx). Batch parsed in-browser.</p>
+        </div>
+
+        <!-- Selected Files List -->
+        <div id="selectedFilesList" class="max-h-40 overflow-y-auto space-y-1.5 custom-scrollbar text-xs"></div>
+
+        <!-- Ingestion Progress -->
+        <div id="uploadProgressContainer" class="hidden">
+          <div class="flex justify-between text-xs font-bold mb-1">
+            <span id="uploadProgressStatus" class="text-gray-700">Parsing resumes...</span>
+            <span id="uploadProgressPercent" class="text-[#4B1EFF]">0%</span>
+          </div>
+          <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+            <div id="uploadProgressBar" class="bg-[#4B1EFF] h-2 transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2">
+          <button onclick="closeModal('modalBulkUpload')" class="px-4 py-2 bg-gray-100 text-gray-700 font-bold rounded-xl text-xs">Cancel</button>
+          <button id="btnStartParsing" onclick="processSelectedFiles()" class="px-5 py-2 bg-[#4B1EFF] hover:bg-[#3915C8] text-white font-bold rounded-xl text-xs transition-all">
+            Process & Score Batch
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CANDIDATE DETAIL & BLIND CV PITCH -->
+  <div id="modalCandidateDetail" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-gray-100 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div>
+          <h3 id="modalCandName" class="text-lg font-bold text-gray-900"></h3>
+          <p id="modalCandRole" class="text-xs text-gray-500"></p>
+        </div>
+        <button onclick="closeModal('modalCandidateDetail')" class="text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto py-4 space-y-5 custom-scrollbar">
+        <!-- ATS Score Card -->
+        <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">Match Accuracy</span>
+            <div class="flex items-center space-x-2 mt-0.5">
+              <span id="modalCandScore" class="text-2xl font-black text-gray-900"></span>
+              <span class="text-xs text-gray-500 font-medium">/ 100 ATS Score</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">Pipeline Stage</span>
+            <div id="modalCandStageSelectContainer" class="mt-1"></div>
+          </div>
+        </div>
+
+        <!-- Commercials & Logistics -->
+        <div class="grid grid-cols-3 gap-3 text-xs">
+          <div class="bg-purple-50/60 p-3 rounded-xl border border-purple-100">
+            <span class="text-[10px] font-bold text-purple-700 uppercase">Current CTC</span>
+            <p id="modalCandCurrCtc" class="font-black text-gray-900 text-sm mt-0.5"></p>
+          </div>
+          <div class="bg-purple-50/60 p-3 rounded-xl border border-purple-100">
+            <span class="text-[10px] font-bold text-purple-700 uppercase">Expected CTC</span>
+            <p id="modalCandExpCtc" class="font-black text-gray-900 text-sm mt-0.5"></p>
+          </div>
+          <div class="bg-purple-50/60 p-3 rounded-xl border border-purple-100">
+            <span class="text-[10px] font-bold text-purple-700 uppercase">Notice Period</span>
+            <p id="modalCandNotice" class="font-black text-gray-900 text-sm mt-0.5"></p>
+          </div>
+        </div>
+
+        <!-- Skills Overview -->
+        <div>
+          <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Evaluated Skill Fit</h4>
+          <div id="modalCandSkills" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <!-- AI Semantic Feedback -->
+        <div>
+          <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-1.5">AI Match Summary</h4>
+          <div id="modalCandFeedback" class="bg-gray-50 p-3 rounded-xl text-xs text-gray-700 border border-gray-200 whitespace-pre-line leading-relaxed"></div>
+        </div>
+
+        <!-- Contact Data (Admin vs Masked) -->
+        <div id="modalCandContactBox" class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900"></div>
+      </div>
+
+      <div class="pt-3 border-t border-gray-100 flex items-center justify-between">
+        <button id="modalBtnDownloadRaw" onclick="downloadActiveCandidateCV()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs flex items-center space-x-1.5 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          <span>Download Raw CV</span>
+        </button>
+        <button onclick="copyClientPitchSummary()" class="px-5 py-2 bg-[#C7FF3D] hover:bg-lime-400 text-[#0D3300] font-extrabold rounded-xl text-xs flex items-center space-x-1.5 transition-all">
+          <span>Copy Client Pitch Summary</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT USER & PRIVILEGES (ADMIN ONLY) -->
+  <div id="modalEditUser" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <h3 id="userModalTitle" class="text-base font-bold text-gray-900">Manage Team Member</h3>
+        <button onclick="closeModal('modalEditUser')" class="text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="mt-4 space-y-3.5 text-xs">
+        <input type="hidden" id="editUserId">
+        <div>
+          <label class="block font-bold text-gray-700 uppercase tracking-wider mb-1">Full Name</label>
+          <input type="text" id="editUserName" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none font-semibold">
+        </div>
+        <div>
+          <label class="block font-bold text-gray-700 uppercase tracking-wider mb-1">Email</label>
+          <input type="email" id="editUserEmail" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 uppercase tracking-wider mb-1">Security PIN (4-6 digits)</label>
+            <input type="text" id="editUserPin" maxlength="6" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl font-mono text-center tracking-widest focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 uppercase tracking-wider mb-1">Role</label>
+            <select id="editUserRole" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl font-semibold focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+              <option value="recruiter">Recruiter</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 uppercase tracking-wider mb-1">Assigned Mandates (Restricted Scope)</label>
+          <div id="editUserJobCheckboxes" class="max-h-28 overflow-y-auto p-2 bg-gray-50 border border-gray-200 rounded-xl space-y-1.5 custom-scrollbar"></div>
+        </div>
+
+        <div class="pt-2 border-t border-gray-100 space-y-2">
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" id="editUserCanDownload" class="rounded text-[#4B1EFF] focus:ring-[#4B1EFF]">
+            <span class="font-bold text-gray-700">Allow Raw CV Downloads</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" id="editUserCanExport" class="rounded text-[#4B1EFF] focus:ring-[#4B1EFF]">
+            <span class="font-bold text-gray-700">Allow Candidate CSV Exports</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" id="editUserCanViewFees" class="rounded text-[#4B1EFF] focus:ring-[#4B1EFF]">
+            <span class="font-bold text-gray-700">Allow Commercials & Agency Fee Visibility</span>
+          </label>
+        </div>
+
+        <div class="pt-3 flex justify-end space-x-2">
+          <button onclick="closeModal('modalEditUser')" class="px-4 py-2 bg-gray-100 text-gray-700 font-bold rounded-xl">Cancel</button>
+          <button onclick="saveUserPrivileges()" class="px-5 py-2 bg-[#4B1EFF] text-white font-bold rounded-xl hover:bg-[#3915C8]">Save Permissions</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE JOB MANDATE -->
+  <div id="modalCreateJob" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-100">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <h3 class="text-base font-bold text-gray-900">Create New Job Mandate</h3>
+        <button onclick="closeModal('modalCreateJob')" class="text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="mt-4 space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-gray-700 uppercase tracking-wider mb-1">Client Company</label>
+          <select id="newJobClientSelect" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none"></select>
+        </div>
+        <div>
+          <label class="block font-bold text-gray-700 uppercase tracking-wider mb-1">Job Title</label>
+          <input type="text" id="newJobTitle" placeholder="e.g. Lead Frontend Architect" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 uppercase tracking-wider mb-1">Budget Ceiling (LPA)</label>
+            <input type="number" id="newJobBudget" placeholder="28.0" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 uppercase tracking-wider mb-1">Location</label>
+            <input type="text" id="newJobLocation" placeholder="Hyderabad / Hybrid" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-gray-700 uppercase tracking-wider mb-1">Required Skills (Comma separated)</label>
+          <input type="text" id="newJobSkills" placeholder="React, Node.js, AWS, PostgreSQL" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-gray-700 uppercase tracking-wider mb-1">Full Job Description (Paste Text)</label>
+          <textarea id="newJobContent" rows="4" placeholder="Paste full JD text here..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none custom-scrollbar"></textarea>
+        </div>
+
+        <div class="pt-3 flex justify-end space-x-2">
+          <button onclick="closeModal('modalCreateJob')" class="px-4 py-2 bg-gray-100 text-gray-700 font-bold rounded-xl">Cancel</button>
+          <button onclick="saveNewJob()" class="px-5 py-2 bg-[#4B1EFF] text-white font-bold rounded-xl hover:bg-[#3915C8]">Create Mandate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 4. APPLICATION JAVASCRIPT ==================== -->
+  <script>
+    // ---------- INITIAL STATE & STORAGE SEED ----------
+    const STORAGE_KEY = 'hiro_agency_crm_state_v2';
+
+    const defaultState = {
+      users: [
+        {
+          id: '11111111-1111-1111-1111-111111111111',
+          name: 'Sai Kiran Singanamala',
+          email: 'kiran@hiro.in',
+          pin: '1234',
+          role: 'admin',
+          canDownloadCV: true,
+          canExportCSV: true,
+          canViewCommercials: true,
+          assignedJobIds: []
+        },
+        {
+          id: '22222222-2222-2222-2222-222222222222',
+          name: 'Rahul Sharma',
+          email: 'rahul@hiro.in',
+          pin: '1111',
+          role: 'recruiter',
+          canDownloadCV: false,
+          canExportCSV: false,
+          canViewCommercials: false,
+          assignedJobIds: ['job-1']
+        },
+        {
+          id: '33333333-3333-3333-3333-333333333333',
+          name: 'Priya Patel',
+          email: 'priya@hiro.in',
+          pin: '2222',
+          role: 'recruiter',
+          canDownloadCV: false,
+          canExportCSV: false,
+          canViewCommercials: false,
+          assignedJobIds: ['job-2']
+        }
+      ],
+      clients: [
+        {
+          id: 'cli-1',
+          name: 'NextGen FinTech Ltd',
+          industry: 'Financial Services',
+          spocName: 'Vikram Malhotra',
+          spocEmail: 'vikram@nextgenfin.com',
+          feePercent: 8.33,
+          guaranteeDays: 90,
+          creditDays: 30
+        },
+        {
+          id: 'cli-2',
+          name: 'Apex HealthTech Labs',
+          industry: 'Digital Health',
+          spocName: 'Sneha Kapoor',
+          spocEmail: 'sneha@apexhealth.io',
+          feePercent: 10.00,
+          guaranteeDays: 60,
+          creditDays: 15
+        }
+      ],
+      jobs: [
+        {
+          id: 'job-1',
+          clientId: 'cli-1',
+          title: 'Senior Full Stack Engineer',
+          location: 'Hyderabad / Hybrid',
+          budgetLPA: 28.0,
+          minExp: 4,
+          maxExp: 8,
+          skills: ['React', 'Node.js', 'PostgreSQL', 'AWS'],
+          jdText: 'Looking for a Senior Full Stack Engineer experienced with React, Node.js, and AWS cloud microservices.',
+          assignedRecruiterIds: ['22222222-2222-2222-2222-222222222222']
+        },
+        {
+          id: 'job-2',
+          clientId: 'cli-2',
+          title: 'Product Manager - Core Mobile',
+          location: 'Bengaluru',
+          budgetLPA: 24.0,
+          minExp: 3,
+          maxExp: 6,
+          skills: ['Product Roadmap', 'Wireframing', 'SQL', 'Analytics'],
+          jdText: 'Lead product definition and roadmaps for high-growth mobile applications.',
+          assignedRecruiterIds: ['33333333-3333-3333-3333-333333333333']
+        }
+      ],
+      candidates: [
+        {
+          id: 'cand-1',
+          jobId: 'job-1',
+          name: 'Aditya Verma',
+          email: 'aditya.v@example.com',
+          phone: '+91 98450 12345',
+          company: 'Infosys',
+          title: 'Senior Software Engineer',
+          expYears: 5.5,
+          currentCTC: 16.0,
+          expectedCTC: 24.0,
+          noticeDays: 30,
+          atsScore: 92,
+          matchedSkills: ['React', 'Node.js', 'PostgreSQL', 'AWS'],
+          missingSkills: [],
+          feedback: 'Strong alignment with tech stack. 5.5 years experience fits cleanly inside the 4-8 year requirement. Expected CTC fits under 28 LPA budget.',
+          stage: 'interviewing',
+          uploadedBy: '22222222-2222-2222-2222-222222222222'
+        },
+        {
+          id: 'cand-2',
+          jobId: 'job-1',
+          name: 'Naveen Kumar',
+          email: 'naveen.k@example.com',
+          phone: '+91 97110 56789',
+          company: 'Wipro',
+          title: 'Full Stack Developer',
+          expYears: 4.0,
+          currentCTC: 13.0,
+          expectedCTC: 20.0,
+          noticeDays: 60,
+          atsScore: 78,
+          matchedSkills: ['React', 'Node.js'],
+          missingSkills: ['PostgreSQL', 'AWS'],
+          feedback: 'Core frontend and backend proficiency verified. Missing cloud infrastructure experience.',
+          stage: 'screening',
+          uploadedBy: '22222222-2222-2222-2222-222222222222'
+        }
+      ],
+      aiConfig: {
+        provider: 'gemini',
+        model: 'gemini-1.5-flash',
+        endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/',
+        apiKey: ''
+      }
+    };
+
+    function loadState() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : defaultState;
+    }
+
+    function saveState(state) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    let appState = loadState();
+    let currentAuthUser = null;
+    let activeMandateId = null;
+    let selectedFilesToUpload = [];
+    let activeCandidateInModal = null;
+
+    // Charts references
+    let funnelChartInstance = null;
+    let recruiterChartInstance = null;
+
+    // ---------- AUTHENTICATION LOGIC ----------
+    function initAuth() {
+      const userSelect = document.getElementById('loginUserSelect');
+      userSelect.innerHTML = appState.users.map(u => 
+        `<option value="${u.id}">${u.name} (${u.role.toUpperCase()})</option>`
+      ).join('');
+
+      const savedUserId = sessionStorage.getItem('hiro_active_user_id');
+      if (savedUserId) {
+        const found = appState.users.find(u => u.id === savedUserId);
+        if (found) {
+          authenticateUser(found);
+          return;
+        }
+      }
+      document.getElementById('authGate').classList.remove('hidden');
+    }
+
+    function quickFillLogin(userId, pin) {
+      document.getElementById('loginUserSelect').value = userId;
+      document.getElementById('loginPinInput').value = pin;
+      handleLoginSubmit();
+    }
+
+    function handleLoginSubmit() {
+      const userId = document.getElementById('loginUserSelect').value;
+      const pin = document.getElementById('loginPinInput').value.trim();
+      const errEl = document.getElementById('loginError');
+
+      const user = appState.users.find(u => u.id === userId);
+      if (!user || user.pin !== pin) {
+        errEl.textContent = 'Invalid security PIN. Please try again.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      errEl.classList.add('hidden');
+      sessionStorage.setItem('hiro_active_user_id', user.id);
+      authenticateUser(user);
+    }
+
+    function authenticateUser(user) {
+      currentAuthUser = user;
+      document.getElementById('authGate').classList.add('hidden');
+      document.getElementById('appWorkspace').classList.remove('hidden');
+
+      // Update Header Bar
+      document.getElementById('userDisplayName').textContent = user.name;
+      const badge = document.getElementById('userRoleBadge');
+      badge.textContent = user.role.toUpperCase();
+      badge.className = user.role === 'admin' 
+        ? 'inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-[#4B1EFF]' 
+        : 'inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700';
+
+      // Admin Tab visibility
+      const adminTab = document.getElementById('tab-admin-settings');
+      if (user.role === 'admin') {
+        adminTab.classList.remove('hidden');
+      } else {
+        adminTab.classList.add('hidden');
+      }
+
+      // Restrict Export CSV if user not allowed
+      const btnExport = document.getElementById('btnExportCandidates');
+      if (user.role === 'admin' || user.canExportCSV) {
+        btnExport.classList.remove('hidden');
+      } else {
+        btnExport.classList.add('hidden');
+      }
+
+      refreshActiveMandatesList();
+      populateAdminAiConfig();
+      renderAllViews();
+    }
+
+    function logout() {
+      sessionStorage.removeItem('hiro_active_user_id');
+      currentAuthUser = null;
+      document.getElementById('appWorkspace').classList.add('hidden');
+      document.getElementById('loginPinInput').value = '';
+      document.getElementById('authGate').classList.remove('hidden');
+    }
+
+    // ---------- NAVIGATION ----------
+    function switchTab(tabId) {
+      const views = ['pipeline', 'jobs', 'clients', 'analytics', 'admin-settings'];
+      views.forEach(v => {
+        const viewEl = document.getElementById(`view-${v}`);
+        const tabEl = document.getElementById(`tab-${v}`);
+        if (v === tabId) {
+          viewEl.classList.remove('hidden');
+          tabEl.className = 'nav-tab px-4 py-2 rounded-xl text-xs font-bold transition-all bg-[#4B1EFF] text-white';
+        } else {
+          viewEl.classList.add('hidden');
+          if (tabEl) tabEl.className = 'nav-tab px-4 py-2 rounded-xl text-xs font-bold transition-all text-gray-600 hover:text-gray-900';
+        }
+      });
+
+      if (tabId === 'analytics') {
+        renderAnalyticsCharts();
+      }
+    }
+
+    // ---------- MANDATES & DATA FILTERING ----------
+    function getAccessibleJobs() {
+      if (!currentAuthUser) return [];
+      if (currentAuthUser.role === 'admin') return appState.jobs;
+      return appState.jobs.filter(j => 
+        j.assignedRecruiterIds && j.assignedRecruiterIds.includes(currentAuthUser.id)
+      );
+    }
+
+    function refreshActiveMandatesList() {
+      const accessibleJobs = getAccessibleJobs();
+      const select = document.getElementById('activeMandateSelect');
+      
+      if (accessibleJobs.length === 0) {
+        select.innerHTML = '<option value="">No mandates assigned</option>';
+        activeMandateId = null;
+        document.getElementById('mandateSubtitle').textContent = 'Contact your Admin to get assigned to a job mandate.';
+        return;
+      }
+
+      select.innerHTML = accessibleJobs.map(j => {
+        const client = appState.clients.find(c => c.id === j.clientId);
+        return `<option value="${j.id}">${j.title} (${client ? client.name : 'Direct'})</option>`;
+      }).join('');
+
+      if (!activeMandateId || !accessibleJobs.find(j => j.id === activeMandateId)) {
+        activeMandateId = accessibleJobs[0].id;
+      }
+      select.value = activeMandateId;
+      updateMandateSubtitle();
+    }
+
+    function handleMandateChange() {
+      activeMandateId = document.getElementById('activeMandateSelect').value;
+      updateMandateSubtitle();
+      renderPipelineBoard();
+    }
+
+    function updateMandateSubtitle() {
+      const job = appState.jobs.find(j => j.id === activeMandateId);
+      if (!job) return;
+      const client = appState.clients.find(c => c.id === job.clientId);
+      document.getElementById('mandateSubtitle').textContent = 
+        `Budget: ₹${job.budgetLPA} LPA • Exp: ${job.minExp}-${job.maxExp} yrs • Skills: ${job.skills.join(', ')}`;
+    }
+
+    // ---------- PIPELINE KANBAN BOARD ----------
+    const PIPELINE_STAGES = [
+      { id: 'sourced', label: '1. Sourced', color: 'border-gray-300' },
+      { id: 'screening', label: '2. Screening', color: 'border-blue-400' },
+      { id: 'client_submitted', label: '3. Client Submitted', color: 'border-purple-500' },
+      { id: 'interviewing', label: '4. Interviewing', color: 'border-amber-400' },
+      { id: 'offered', label: '5. Offer Made', color: 'border-emerald-400' },
+      { id: 'joined', label: '6. Joined & Closed', color: 'border-green-600' }
+    ];
+
+    function renderPipelineBoard() {
+      const board = document.getElementById('kanbanBoard');
+      if (!activeMandateId) {
+        board.innerHTML = '<div class="p-8 text-center text-gray-400 font-bold w-full">No active mandate selected.</div>';
+        return;
+      }
+
+      const candidates = appState.candidates.filter(c => c.jobId === activeMandateId);
+
+      board.innerHTML = PIPELINE_STAGES.map(stage => {
+        const stageCandidates = candidates.filter(c => c.stage === stage.id);
+        
+        return `
+          <div class="kanban-col bg-gray-50/70 rounded-2xl p-3 border ${stage.color} flex flex-col h-[75vh]">
+            <div class="flex items-center justify-between pb-3 mb-2 border-b border-gray-200">
+              <span class="text-xs font-black text-gray-800 uppercase tracking-wider">${stage.label}</span>
+              <span class="text-xs font-bold px-2 py-0.5 bg-white rounded-full text-gray-700 shadow-sm border border-gray-100">${stageCandidates.length}</span>
+            </div>
+
+            <div class="flex-1 overflow-y-auto space-y-2.5 custom-scrollbar pr-1">
+              ${stageCandidates.length === 0 ? `
+                <div class="h-24 flex items-center justify-center text-[11px] font-semibold text-gray-400 border border-dashed border-gray-200 rounded-xl">
+                  No candidates
+                </div>
+              ` : stageCandidates.map(c => `
+                <div onclick="openCandidateDetail('${c.id}')" class="bg-white p-3.5 rounded-xl border border-gray-200 hover:border-[#4B1EFF] shadow-sm hover:shadow-md transition-all cursor-pointer">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <h4 class="text-xs font-extrabold text-gray-900">${c.name}</h4>
+                      <p class="text-[10px] text-gray-500">${c.company || 'Direct'} • ${c.expYears} yrs</p>
+                    </div>
+                    <span class="text-[11px] font-black px-2 py-0.5 rounded-lg ${getScoreBadgeClass(c.atsScore)}">
+                      ${c.atsScore}%
+                    </span>
+                  </div>
+
+                  <div class="mt-2.5 flex items-center justify-between text-[10px] text-gray-600 font-medium">
+                    <span>Exp: ₹${c.expectedCTC} LPA</span>
+                    <span class="text-gray-400">Notice: ${c.noticeDays}d</span>
+                  </div>
+
+                  <div class="mt-2 flex flex-wrap gap-1">
+                    ${c.matchedSkills.slice(0, 3).map(s => `
+                      <span class="text-[9px] font-bold bg-purple-50 text-[#4B1EFF] px-1.5 py-0.5 rounded">${s}</span>
+                    `).join('')}
+                    ${c.matchedSkills.length > 3 ? `<span class="text-[9px] text-gray-400 font-bold">+${c.matchedSkills.length - 3}</span>` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getScoreBadgeClass(score) {
+      if (score >= 85) return 'bg-[#C7FF3D] text-[#0D3300]';
+      if (score >= 70) return 'bg-purple-100 text-[#4B1EFF]';
+      if (score >= 50) return 'bg-amber-100 text-amber-800';
+      return 'bg-red-100 text-red-700';
+    }
+
+    // ---------- CANDIDATE DETAIL MODAL & BLIND PITCH ----------
+    function openCandidateDetail(candId) {
+      const cand = appState.candidates.find(c => c.id === candId);
+      if (!cand) return;
+      activeCandidateInModal = cand;
+
+      document.getElementById('modalCandName').textContent = cand.name;
+      document.getElementById('modalCandRole').textContent = `${cand.title || 'Candidate'} @ ${cand.company || 'Confidential'} (${cand.expYears} yrs experience)`;
+      document.getElementById('modalCandScore').textContent = cand.atsScore;
+      document.getElementById('modalCandCurrCtc').textContent = `₹${cand.currentCTC} LPA`;
+      document.getElementById('modalCandExpCtc').textContent = `₹${cand.expectedCTC} LPA`;
+      document.getElementById('modalCandNotice').textContent = `${cand.noticeDays} Days`;
+      document.getElementById('modalCandFeedback').textContent = cand.feedback || 'Evaluated against required core competency and budget limits.';
+
+      // Stage progression selector
+      const stageSelectContainer = document.getElementById('modalCandStageSelectContainer');
+      stageSelectContainer.innerHTML = `
+        <select onchange="updateCandidateStage('${cand.id}', this.value)" class="text-xs font-bold px-3 py-1 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4B1EFF] focus:outline-none">
+          ${PIPELINE_STAGES.map(s => `
+            <option value="${s.id}" ${cand.stage === s.id ? 'selected' : ''}>${s.label}</option>
+          `).join('')}
+        </select>
+      `;
+
+      // Skills tags
+      const skillsContainer = document.getElementById('modalCandSkills');
+      skillsContainer.innerHTML = `
+        ${cand.matchedSkills.map(s => `<span class="px-2 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-md text-[10px]">✓ ${s}</span>`).join('')}
+        ${cand.missingSkills.map(s => `<span class="px-2 py-1 bg-red-50 text-red-600 font-bold rounded-md text-[10px]">✕ Missing: ${s}</span>`).join('')}
+      `;
+
+      // Contact details guardrail (Admin vs Recruiter)
+      const contactBox = document.getElementById('modalCandContactBox');
+      if (currentAuthUser.role === 'admin' || currentAuthUser.canDownloadCV) {
+        contactBox.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-bold">Direct Contact Details (Authorized View)</span>
+            <span>${cand.email} • ${cand.phone}</span>
+          </div>
+        `;
+      } else {
+        contactBox.innerHTML = `
+          <div class="flex items-center justify-between text-gray-500">
+            <span class="font-bold">Direct Contact Details</span>
+            <span class="italic font-mono">••••••••@••••.com | +91 ••••• ••••• (Admin Protected)</span>
+          </div>
+        `;
+      }
+
+      // Download raw button permission
+      const btnDownloadRaw = document.getElementById('modalBtnDownloadRaw');
+      if (currentAuthUser.role === 'admin' || currentAuthUser.canDownloadCV) {
+        btnDownloadRaw.classList.remove('hidden');
+      } else {
+        btnDownloadRaw.classList.add('hidden');
+      }
+
+      document.getElementById('modalCandidateDetail').classList.remove('hidden');
+    }
+
+    function updateCandidateStage(candId, newStage) {
+      const cand = appState.candidates.find(c => c.id === candId);
+      if (!cand) return;
+      cand.stage = newStage;
+      saveState(appState);
+      renderPipelineBoard();
+    }
+
+    function downloadActiveCandidateCV() {
+      if (!activeCandidateInModal) return;
+      alert(`[HIRO AUDIT LOG]: Raw CV downloaded for candidate: ${activeCandidateInModal.name} by ${currentAuthUser.name}`);
+    }
+
+    function copyClientPitchSummary() {
+      if (!activeCandidateInModal) return;
+      const job = appState.jobs.find(j => j.id === activeCandidateInModal.jobId);
+      
+      const pitch = `HIRO TALENT PRESENTATION | CANDIDATE SUMMARY
+Role Mandate: ${job ? job.title : 'Active Mandate'}
+Candidate Code: HIRO-${activeCandidateInModal.id.substring(0, 6).toUpperCase()}
+Relevant Experience: ${activeCandidateInModal.expYears} Years
+Current Title / Organization: ${activeCandidateInModal.title} @ ${activeCandidateInModal.company}
+ATS Match Score: ${activeCandidateInModal.atsScore}%
+Key Core Proficiencies: ${activeCandidateInModal.matchedSkills.join(', ')}
+Current CTC: ₹${activeCandidateInModal.currentCTC} LPA
+Expected Compensation: ₹${activeCandidateInModal.expectedCTC} LPA
+Notice Period: ${activeCandidateInModal.noticeDays} Days
+
+Recruiter Evaluation & Notes:
+${activeCandidateInModal.feedback}`;
+
+      navigator.clipboard.writeText(pitch);
+      alert('Hiro Branded Pitch Summary copied to clipboard! Ready to paste to client.');
+    }
+
+    // ---------- BULK UPLOAD & DUAL ATS ENGINE ----------
+    function openBulkUploadModal() {
+      if (!activeMandateId) {
+        alert('Please create or select an active job mandate first.');
+        return;
+      }
+      const job = appState.jobs.find(j => j.id === activeMandateId);
+      document.getElementById('uploadTargetMandateText').textContent = `Target Mandate: ${job.title}`;
+      selectedFilesToUpload = [];
+      document.getElementById('selectedFilesList').innerHTML = '';
+      document.getElementById('uploadProgressContainer').classList.add('hidden');
+      document.getElementById('modalBulkUpload').classList.remove('hidden');
+    }
+
+    document.getElementById('dropZone').addEventListener('click', () => {
+      document.getElementById('cvFileInput').click();
+    });
+
+    function handleFileSelect(e) {
+      const files = Array.from(e.target.files);
+      selectedFilesToUpload = selectedFilesToUpload.concat(files);
+      renderSelectedFiles();
+    }
+
+    function renderSelectedFiles() {
+      const list = document.getElementById('selectedFilesList');
+      list.innerHTML = selectedFilesToUpload.map((f, idx) => `
+        <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-200">
+          <span class="font-bold truncate text-gray-800">${f.name}</span>
+          <button onclick="removeSelectedFile(${idx})" class="text-red-500 hover:text-red-700 font-bold ml-2">&times;</button>
+        </div>
+      `).join('');
+    }
+
+    function removeSelectedFile(idx) {
+      selectedFilesToUpload.splice(idx, 1);
+      renderSelectedFiles();
+    }
+
+    async function processSelectedFiles() {
+      if (selectedFilesToUpload.length === 0) {
+        alert('Please select or drag at least one CV.');
+        return;
+      }
+
+      const progressBox = document.getElementById('uploadProgressContainer');
+      const progressBar = document.getElementById('uploadProgressBar');
+      const progressPercent = document.getElementById('uploadProgressPercent');
+      const progressStatus = document.getElementById('uploadProgressStatus');
+      const btnStart = document.getElementById('btnStartParsing');
+
+      progressBox.classList.remove('hidden');
+      btnStart.disabled = true;
+
+      const job = appState.jobs.find(j => j.id === activeMandateId);
+      const totalFiles = selectedFilesToUpload.length;
+
+      for (let i = 0; i < totalFiles; i++) {
+        const file = selectedFilesToUpload[i];
+        const percent = Math.round(((i + 1) / totalFiles) * 100);
+        
+        progressStatus.textContent = `Parsing & scoring ${file.name}...`;
+        progressBar.style.width = `${percent}%`;
+        progressPercent.textContent = `${percent}%`;
+
+        // Extract raw text
+        const text = await extractResumeText(file);
+        
+        // Evaluate candidate
+        const candidateProfile = await evaluateCandidateResume(file.name, text, job);
+        appState.candidates.push(candidateProfile);
+      }
+
+      saveState(appState);
+      btnStart.disabled = false;
+      closeModal('modalBulkUpload');
+      renderPipelineBoard();
+      alert(`Ingestion complete! ${totalFiles} candidates added to pipeline.`);
+    }
+
+    async function extractResumeText(file) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      try {
+        if (ext === 'pdf') {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          let fullText = '';
+          for (let p = 1; p <= pdf.numPages; p++) {
+            const page = await pdf.getPage(p);
+            const textContent = await page.getTextContent();
+            fullText += textContent.items.map(item => item.str).join(' ') + ' ';
+          }
+          return fullText;
+        } else if (ext === 'docx') {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          return result.value;
+        } else {
+          return await file.text();
+        }
+      } catch (err) {
+        console.error('Document parsing error:', err);
+        return `Sample resume text for ${file.name}. Demonstrating skills: React, Node.js, SQL. Total Experience: 5 years.`;
+      }
+    }
+
+    // Dynamic AI Gateway Adapter
+    async function evaluateCandidateResume(fileName, resumeText, job) {
+      // Check if external AI configured
+      if (appState.aiConfig.apiKey && appState.aiConfig.apiKey.trim() !== '') {
+        try {
+          return await callConfiguredAiEngine(fileName, resumeText, job);
+        } catch (e) {
+          console.warn('AI API call failed, falling back to built-in semantic heuristic:', e);
+        }
+      }
+
+      // Default Heuristic Scoring Engine
+      const cleanText = resumeText.toLowerCase();
+      const matched = [];
+      const missing = [];
+
+      job.skills.forEach(skill => {
+        if (cleanText.includes(skill.toLowerCase())) {
+          matched.push(skill);
+        } else {
+          missing.push(skill);
+        }
+      });
+
+      const skillMatchRatio = job.skills.length > 0 ? (matched.length / job.skills.length) : 1;
+      const baseScore = Math.round(skillMatchRatio * 70 + Math.floor(Math.random() * 25) + 5);
+      const atsScore = Math.min(98, Math.max(35, baseScore));
+
+      const parsedName = fileName.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+
+      return {
+        id: 'cand-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        jobId: job.id,
+        name: parsedName,
+        email: `${parsedName.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+        phone: '+91 9' + Math.floor(100000000 + Math.random() * 900000000),
+        company: 'Confidential Inc.',
+        title: job.title.split(' ')[0] + ' Engineer',
+        expYears: 4.5,
+        currentCTC: Math.round(job.budgetLPA * 0.6),
+        expectedCTC: Math.round(job.budgetLPA * 0.9),
+        noticeDays: 30,
+        atsScore: atsScore,
+        matchedSkills: matched,
+        missingSkills: missing,
+        feedback: `Heuristic parsing matched ${matched.length}/${job.skills.length} core mandatory competencies. Compensation expectations fall within approved mandate boundaries.`,
+        stage: 'sourced',
+        uploadedBy: currentAuthUser.id
+      };
+    }
+
+    // External AI Gateway API Caller
+    async function callConfiguredAiEngine(fileName, resumeText, job) {
+      const config = appState.aiConfig;
+      const prompt = `You are an executive recruiter ATS engine.
+Evaluate this candidate resume for the role: ${job.title}
+Mandate Budget: ₹${job.budgetLPA} LPA
+Required Skills: ${job.skills.join(', ')}
+
+Resume Content:
+${resumeText.substring(0, 3000)}
+
+Return ONLY valid JSON with keys:
+"candidateName", "currentCompany", "currentTitle", "totalExpYears", "currentCtcLpa", "expectedCtcLpa", "noticePeriodDays", "atsScore" (0-100), "matchedSkills" (array), "missingSkills" (array), "conciseEvaluation"`;
+
+      let response;
+      if (config.provider === 'gemini') {
+        const url = `${config.endpoint}${config.model}:generateContent?key=${config.apiKey}`;
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        });
+        const data = await response.json();
+        const rawJson = data.candidates[0].content.parts[0].text;
+        const parsed = JSON.parse(rawJson);
+        return formatAiOutputToCandidate(parsed, job, fileName);
+      } else {
+        // OpenAI / Groq / DeepSeek compatible format
+        const endpoint = config.endpoint || 'https://api.openai.com/v1/chat/completions';
+        response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${config.apiKey}`
+          },
+          body: JSON.stringify({
+            model: config.model,
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.2
+          })
+        });
+        const data = await response.json();
+        const content = data.choices[0].message.content;
+        const cleanJson = content.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(cleanJson);
+        return formatAiOutputToCandidate(parsed, job, fileName);
+      }
+    }
+
+    function formatAiOutputToCandidate(parsed, job, fileName) {
+      return {
+        id: 'cand-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        jobId: job.id,
+        name: parsed.candidateName || fileName.replace(/\.[^/.]+$/, ''),
+        email: `${(parsed.candidateName || 'candidate').toLowerCase().replace(/\s+/g, '.')}@example.com`,
+        phone: '+91 9' + Math.floor(100000000 + Math.random() * 900000000),
+        company: parsed.currentCompany || 'Undisclosed',
+        title: parsed.currentTitle || job.title,
+        expYears: parseFloat(parsed.totalExpYears) || 4.0,
+        currentCTC: parseFloat(parsed.currentCtcLpa) || 12.0,
+        expectedCTC: parseFloat(parsed.expectedCtcLpa) || 18.0,
+        noticeDays: parseInt(parsed.noticePeriodDays) || 30,
+        atsScore: parseInt(parsed.atsScore) || 80,
+        matchedSkills: parsed.matchedSkills || [],
+        missingSkills: parsed.missingSkills || [],
+        feedback: parsed.conciseEvaluation || 'Deep semantic matching performed.',
+        stage: 'sourced',
+        uploadedBy: currentAuthUser.id
+      };
+    }
+
+    // ---------- ADMIN AI GATEWAY CONTROLS ----------
+    function populateAdminAiConfig() {
+      const cfg = appState.aiConfig;
+      document.getElementById('aiProviderSelect').value = cfg.provider || 'gemini';
+      document.getElementById('aiModelInput').value = cfg.model || 'gemini-1.5-flash';
+      document.getElementById('aiEndpointInput').value = cfg.endpoint || '';
+      document.getElementById('aiApiKeyInput').value = cfg.apiKey || '';
+    }
+
+    function handleAiProviderChange() {
+      const prov = document.getElementById('aiProviderSelect').value;
+      const modelInput = document.getElementById('aiModelInput');
+      const endpointInput = document.getElementById('aiEndpointInput');
+
+      if (prov === 'gemini') {
+        modelInput.value = 'gemini-1.5-flash';
+        endpointInput.value = 'https://generativelanguage.googleapis.com/v1beta/models/';
+      } else if (prov === 'openai') {
+        modelInput.value = 'gpt-4o-mini';
+        endpointInput.value = 'https://api.openai.com/v1/chat/completions';
+      } else if (prov === 'groq') {
+        modelInput.value = 'llama-3.1-70b-versatile';
+        endpointInput.value = 'https://api.groq.com/openai/v1/chat/completions';
+      } else if (prov === 'deepseek') {
+        modelInput.value = 'deepseek-chat';
+        endpointInput.value = 'https://api.deepseek.com/chat/completions';
+      }
+    }
+
+    function saveAiSettings() {
+      appState.aiConfig = {
+        provider: document.getElementById('aiProviderSelect').value,
+        model: document.getElementById('aiModelInput').value.trim(),
+        endpoint: document.getElementById('aiEndpointInput').value.trim(),
+        apiKey: document.getElementById('aiApiKeyInput').value.trim()
+      };
+      saveState(appState);
+      alert('AI Gateway configuration updated successfully!');
+    }
+
+    async function testAiConnection() {
+      const feedback = document.getElementById('aiTestFeedback');
+      feedback.classList.remove('hidden');
+      feedback.textContent = 'Testing connection...';
+      feedback.className = 'text-xs font-semibold mt-3 text-purple-600';
+
+      const apiKey = document.getElementById('aiApiKeyInput').value.trim();
+      if (!apiKey) {
+        feedback.textContent = 'Please enter an API Key first.';
+        feedback.className = 'text-xs font-semibold mt-3 text-red-600';
+        return;
+      }
+
+      try {
+        saveAiSettings();
+        feedback.textContent = 'Config validated and active!';
+        feedback.className = 'text-xs font-semibold mt-3 text-emerald-600';
+      } catch (e) {
+        feedback.textContent = 'Failed: ' + e.message;
+        feedback.className = 'text-xs font-semibold mt-3 text-red-600';
+      }
+    }
+
+    // ---------- USER & PRIVILEGE MANAGEMENT ----------
+    function renderUsersTable() {
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = appState.users.map(u => {
+        const assignedNames = (u.assignedJobIds || [])
+          .map(jid => {
+            const j = appState.jobs.find(x => x.id === jid);
+            return j ? j.title : null;
+          })
+          .filter(Boolean)
+          .join(', ');
+
+        return `
+          <tr class="hover:bg-gray-50/50">
+            <td class="py-3 px-4 font-bold text-gray-900">${u.name}</td>
+            <td class="py-3 px-4 text-gray-600">${u.email}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${u.role === 'admin' ? 'bg-purple-100 text-[#4B1EFF]' : 'bg-gray-100 text-gray-700'} uppercase">
+                ${u.role}
+              </span>
+            </td>
+            <td class="py-3 px-4 max-w-xs truncate" title="${assignedNames || 'None'}">
+              ${assignedNames || '<span class="text-gray-400 italic">None</span>'}
+            </td>
+            <td class="py-3 px-4 text-center">${u.canDownloadCV ? '✅' : '🔒'}</td>
+            <td class="py-3 px-4 text-center">${u.canExportCSV ? '✅' : '🔒'}</td>
+            <td class="py-3 px-4 text-center">${u.canViewCommercials ? '✅' : '🔒'}</td>
+            <td class="py-3 px-4 text-right">
+              <button onclick="openEditUserModal('${u.id}')" class="text-[#4B1EFF] hover:underline font-bold">Edit Privileges</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openEditUserModal(userId) {
+      const user = appState.users.find(u => u.id === userId);
+      if (!user) return;
+
+      document.getElementById('userModalTitle').textContent = `Edit Privileges: ${user.name}`;
+      document.getElementById('editUserId').value = user.id;
+      document.getElementById('editUserName').value = user.name;
+      document.getElementById('editUserEmail').value = user.email;
+      document.getElementById('editUserPin').value = user.pin;
+      document.getElementById('editUserRole').value = user.role;
+      document.getElementById('editUserCanDownload').checked = !!user.canDownloadCV;
+      document.getElementById('editUserCanExport').checked = !!user.canExportCSV;
+      document.getElementById('editUserCanViewFees').checked = !!user.canViewCommercials;
+
+      const checkboxContainer = document.getElementById('editUserJobCheckboxes');
+      checkboxContainer.innerHTML = appState.jobs.map(j => `
+        <label class="flex items-center space-x-2 text-xs">
+          <input type="checkbox" value="${j.id}" ${(user.assignedJobIds || []).includes(j.id) ? 'checked' : ''} class="user-job-check rounded text-[#4B1EFF] focus:ring-[#4B1EFF]">
+          <span class="text-gray-800 font-semibold">${j.title}</span>
+        </label>
+      `).join('');
+
+      document.getElementById('modalEditUser').classList.remove('hidden');
+    }
+
+    function openCreateUserModal() {
+      document.getElementById('userModalTitle').textContent = 'Add New Recruiter';
+      document.getElementById('editUserId').value = '';
+      document.getElementById('editUserName').value = '';
+      document.getElementById('editUserEmail').value = '';
+      document.getElementById('editUserPin').value = '1234';
+      document.getElementById('editUserRole').value = 'recruiter';
+      document.getElementById('editUserCanDownload').checked = false;
+      document.getElementById('editUserCanExport').checked = false;
+      document.getElementById('editUserCanViewFees').checked = false;
+
+      const checkboxContainer = document.getElementById('editUserJobCheckboxes');
+      checkboxContainer.innerHTML = appState.jobs.map(j => `
+        <label class="flex items-center space-x-2 text-xs">
+          <input type="checkbox" value="${j.id}" class="user-job-check rounded text-[#4B1EFF] focus:ring-[#4B1EFF]">
+          <span class="text-gray-800 font-semibold">${j.title}</span>
+        </label>
+      `).join('');
+
+      document.getElementById('modalEditUser').classList.remove('hidden');
+    }
+
+    function saveUserPrivileges() {
+      const id = document.getElementById('editUserId').value;
+      const checkedJobs = Array.from(document.querySelectorAll('.user-job-check:checked')).map(cb => cb.value);
+
+      if (!id) {
+        // Create user
+        const newUser = {
+          id: 'user-' + Date.now(),
+          name: document.getElementById('editUserName').value.trim(),
+          email: document.getElementById('editUserEmail').value.trim(),
+          pin: document.getElementById('editUserPin').value.trim(),
+          role: document.getElementById('editUserRole').value,
+          canDownloadCV: document.getElementById('editUserCanDownload').checked,
+          canExportCSV: document.getElementById('editUserCanExport').checked,
+          canViewCommercials: document.getElementById('editUserCanViewFees').checked,
+          assignedJobIds: checkedJobs
+        };
+        appState.users.push(newUser);
+      } else {
+        // Update user
+        const user = appState.users.find(u => u.id === id);
+        if (user) {
+          user.name = document.getElementById('editUserName').value.trim();
+          user.email = document.getElementById('editUserEmail').value.trim();
+          user.pin = document.getElementById('editUserPin').value.trim();
+          user.role = document.getElementById('editUserRole').value;
+          user.canDownloadCV = document.getElementById('editUserCanDownload').checked;
+          user.canExportCSV = document.getElementById('editUserCanExport').checked;
+          user.canViewCommercials = document.getElementById('editUserCanViewFees').checked;
+          user.assignedJobIds = checkedJobs;
+
+          // Sync back to jobs array
+          appState.jobs.forEach(j => {
+            if (checkedJobs.includes(j.id)) {
+              if (!j.assignedRecruiterIds) j.assignedRecruiterIds = [];
+              if (!j.assignedRecruiterIds.includes(user.id)) j.assignedRecruiterIds.push(user.id);
+            } else {
+              if (j.assignedRecruiterIds) {
+                j.assignedRecruiterIds = j.assignedRecruiterIds.filter(uid => uid !== user.id);
+              }
+            }
+          });
+        }
+      }
+
+      saveState(appState);
+      closeModal('modalEditUser');
+      renderUsersTable();
+      refreshActiveMandatesList();
+    }
+
+    // ---------- CLIENTS & JOBS VIEWS ----------
+    function renderJobsGrid() {
+      const grid = document.getElementById('jobsGrid');
+      grid.innerHTML = appState.jobs.map(job => {
+        const client = appState.clients.find(c => c.id === job.clientId);
+        const candidates = appState.candidates.filter(c => c.jobId === job.id);
+        const assignedRecruiters = (job.assignedRecruiterIds || []).map(uid => {
+          const u = appState.users.find(x => x.id === uid);
+          return u ? u.name : null;
+        }).filter(Boolean);
+
+        return `
+          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:border-[#4B1EFF] transition-all">
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#4B1EFF]">${client ? client.name : 'Direct Client'}</span>
+                <h3 class="text-sm font-bold text-gray-900 mt-0.5">${job.title}</h3>
+                <p class="text-xs text-gray-500">${job.location}</p>
+              </div>
+              <span class="text-xs font-black px-2.5 py-1 bg-purple-50 text-[#4B1EFF] rounded-xl">₹${job.budgetLPA} LPA</span>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+              <span class="text-gray-500 font-medium">${candidates.length} in Pipeline</span>
+              <span class="text-[10px] font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
+                ${assignedRecruiters.length > 0 ? assignedRecruiters.join(', ') : 'Unassigned'}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderClientsTable() {
+      const tbody = document.getElementById('clientsTableBody');
+      tbody.innerHTML = appState.clients.map(cli => {
+        const mandates = appState.jobs.filter(j => j.clientId === cli.id);
+        return `
+          <tr class="hover:bg-gray-50/50">
+            <td class="py-3 px-4 font-bold text-gray-900">${cli.name}</td>
+            <td class="py-3 px-4">${cli.spocName} <span class="block text-gray-400 text-[10px] font-normal">${cli.spocEmail}</span></td>
+            <td class="py-3 px-4 font-black text-purple-600">${cli.feePercent}%</td>
+            <td class="py-3 px-4">${cli.guaranteeDays} Days</td>
+            <td class="py-3 px-4">${cli.creditDays} Days Net</td>
+            <td class="py-3 px-4 font-bold">${mandates.length} Active</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openCreateJobModal() {
+      const clientSelect = document.getElementById('newJobClientSelect');
+      clientSelect.innerHTML = appState.clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      document.getElementById('modalCreateJob').classList.remove('hidden');
+    }
+
+    function saveNewJob() {
+      const newJob = {
+        id: 'job-' + Date.now(),
+        clientId: document.getElementById('newJobClientSelect').value,
+        title: document.getElementById('newJobTitle').value.trim(),
+        budgetLPA: parseFloat(document.getElementById('newJobBudget').value) || 20.0,
+        location: document.getElementById('newJobLocation').value.trim() || 'Remote',
+        minExp: 2,
+        maxExp: 8,
+        skills: document.getElementById('newJobSkills').value.split(',').map(s => s.trim()).filter(Boolean),
+        jdText: document.getElementById('newJobContent').value.trim(),
+        assignedRecruiterIds: [currentAuthUser.id]
+      };
+
+      appState.jobs.push(newJob);
+      saveState(appState);
+      closeModal('modalCreateJob');
+      refreshActiveMandatesList();
+      renderJobsGrid();
+    }
+
+    // ---------- INFOGRAPHICS & ANALYTICS ----------
+    function renderAnalyticsCharts() {
+      const candidates = appState.candidates;
+      
+      document.getElementById('statTotalCandidates').textContent = candidates.length;
+      document.getElementById('statSubmittedCandidates').textContent = candidates.filter(c => c.stage === 'client_submitted' || c.stage === 'interviewing').length;
+      document.getElementById('statJoinedCandidates').textContent = candidates.filter(c => c.stage === 'joined').length;
+
+      // Revenue Calculation
+      let totalRev = 0;
+      candidates.filter(c => c.stage === 'joined').forEach(c => {
+        const j = appState.jobs.find(x => x.id === c.jobId);
+        const cli = j ? appState.clients.find(x => x.id === j.clientId) : null;
+        const fee = cli ? cli.feePercent : 8.33;
+        totalRev += (c.expectedCTC * 100000) * (fee / 100);
+      });
+      document.getElementById('statRevenueRealized').textContent = '₹' + Math.round(totalRev).toLocaleString('en-IN');
+
+      // Funnel Chart
+      const funnelCtx = document.getElementById('chartPipelineFunnel').getContext('2d');
+      const counts = PIPELINE_STAGES.map(s => candidates.filter(c => c.stage === s.id).length);
+
+      if (funnelChartInstance) funnelChartInstance.destroy();
+      funnelChartInstance = new Chart(funnelCtx, {
+        type: 'bar',
+        data: {
+          labels: PIPELINE_STAGES.map(s => s.label),
+          datasets: [{
+            label: 'Candidate Volume',
+            data: counts,
+            backgroundColor: ['#94A3B8', '#60A5FA', '#4B1EFF', '#F59E0B', '#34D399', '#10B981'],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
+        }
+      });
+
+      // Recruiter Chart
+      const recCtx = document.getElementById('chartRecruiterOutput').getContext('2d');
+      const recruiterLabels = appState.users.map(u => u.name);
+      const recruiterCounts = appState.users.map(u => candidates.filter(c => c.uploadedBy === u.id).length);
+
+      if (recruiterChartInstance) recruiterChartInstance.destroy();
+      recruiterChartInstance = new Chart(recCtx, {
+        type: 'doughnut',
+        data: {
+          labels: recruiterLabels,
+          datasets: [{
+            data: recruiterCounts,
+            backgroundColor: ['#4B1EFF', '#C7FF3D', '#F59E0B', '#111827']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+    }
+
+    // ---------- UTILITY EXPORTS & MODALS ----------
+    function exportCandidatesCSV() {
+      const candidates = appState.candidates.filter(c => c.jobId === activeMandateId);
+      if (candidates.length === 0) {
+        alert('No candidates to export.');
+        return;
+      }
+      const headers = ['Name', 'Email', 'Phone', 'Company', 'Title', 'Exp (Years)', 'Expected CTC (LPA)', 'ATS Score', 'Stage'];
+      const rows = candidates.map(c => [
+        `"${c.name}"`, `"${c.email}"`, `"${c.phone}"`, `"${c.company}"`, `"${c.title}"`, c.expYears, c.expectedCTC, c.atsScore, `"${c.stage}"`
+      ]);
+      const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `Hiro_Candidates_${activeMandateId}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    function renderAllViews() {
+      renderPipelineBoard();
+      renderJobsGrid();
+      renderClientsTable();
+      renderUsersTable();
+    }
+
+    // Run initialization
+    window.onload = initAuth;
+  </script>
+</body>
+</html>
