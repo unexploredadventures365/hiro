@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
 <style>
 :root{
   --bg:#F4F5FB;--surface:#FFFFFF;--surface-2:#F8F8FC;--ink:#17142E;--muted:#615F7D;--faint:#9896B0;
@@ -348,9 +349,27 @@ body.modal-open{overflow:hidden}
 .toast-action{margin-left:auto;border:0;background:color-mix(in srgb,currentColor 16%,transparent);color:inherit;padding:5px 10px;border-radius:8px;font-weight:600;cursor:pointer;white-space:nowrap}
 @media (max-width:860px){.toasts{bottom:86px;right:12px;left:12px;max-width:none}}
 @media (max-width:560px){.hide-sm{display:none}.pipeline-head .page-actions{width:100%}.pipeline-head .page-actions .btn{flex:1;justify-content:center}.toolbar .select{flex:1;min-width:0}.search{max-width:none;flex-basis:100%}.mandate-pick .select-lg{width:100%;font-size:17px}}
+
+/* ---------- auth & boot ---------- */
+.auth-links{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.auth-links .btn-text{padding:0;height:auto;font-size:13px}
+.form-note{margin:0;font-size:13px;color:var(--good)}
+.form-note:empty{display:none}
+.boot{min-height:100vh;display:grid;place-items:center;color:var(--muted);gap:14px;text-align:center;padding:24px}
+.spinner{width:28px;height:28px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--brand);animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pending{display:grid;gap:14px;max-width:360px;width:100%}
+.pending h2{font-size:26px}
+.steps{margin:0;padding-left:20px;display:grid;gap:8px;color:var(--ink)}
+.steps code,.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;background:var(--surface-2);padding:1px 6px;border-radius:5px;box-shadow:inset 0 0 0 1px var(--line)}
+.side-foot .icon-btn{width:30px;height:30px}
+.side-foot{gap:4px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--good);display:inline-block;margin-right:6px}
 </style>
 </head>
 <body>
+
+<div id="boot" class="boot"><div><div class="spinner"></div><p id="bootText">Loading Hiro…</p></div></div>
 
 <div id="login" class="login" hidden>
   <section class="login-art" aria-hidden="true">
@@ -362,15 +381,26 @@ body.modal-open{overflow:hidden}
     <div class="art-ring"><span>92</span></div>
   </section>
   <section class="login-form-wrap">
-    <form class="login-form" id="loginForm" autocomplete="off">
-      <h2>Sign in</h2>
-      <p class="page-sub">Choose your name and enter your PIN.</p>
-      <label class="field"><span>Your name</span><select id="loginUser" class="select"></select></label>
-      <label class="field"><span>PIN</span><input id="loginPin" class="input pin" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password"></label>
-      <p id="loginError" class="form-error" role="alert"></p>
-      <button class="btn btn-primary btn-block" type="submit">Sign in</button>
-      <p id="loginHint" class="alert info hint">First time here? The admin PIN is 1234. Change it from Team once you’re in.</p>
+    <form class="login-form" id="authForm" novalidate>
+      <h2 id="authTitle">Sign in</h2>
+      <p class="page-sub" id="authSub">Use the email and password for your Hiro account.</p>
+      <label class="field" id="nameField" hidden><span>Full name</span><input id="authName" class="input" autocomplete="name"></label>
+      <label class="field"><span>Email</span><input id="authEmail" class="input" type="email" autocomplete="email" required></label>
+      <label class="field" id="passField"><span>Password</span><input id="authPass" class="input" type="password" autocomplete="current-password" minlength="6"></label>
+      <p id="authError" class="form-error" role="alert"></p>
+      <p id="authNote" class="form-note" role="status"></p>
+      <button class="btn btn-primary btn-block" type="submit" id="authSubmit">Sign in</button>
+      <div class="auth-links">
+        <button type="button" class="btn btn-text" id="toggleMode">New here? Create an account</button>
+        <button type="button" class="btn btn-text" id="forgotBtn">Forgot password?</button>
+      </div>
     </form>
+    <div class="pending" id="pendingBox" hidden>
+      <h2>Almost there</h2>
+      <p class="page-sub" id="pendingText"></p>
+      <button class="btn btn-primary btn-block" id="pendingRetry" type="button">Check again</button>
+      <button class="btn btn-ghost btn-block" id="pendingOut" type="button">Sign out</button>
+    </div>
   </section>
 </div>
 
@@ -382,6 +412,7 @@ body.modal-open{overflow:hidden}
       <div class="avatar" id="meAvatar"></div>
       <div class="me"><b id="meName"></b><span id="meRole"></span></div>
       <button class="icon-btn" id="themeBtn" aria-label="Switch light or dark mode" title="Switch light or dark mode"></button>
+      <button class="icon-btn" id="passBtn" aria-label="Change password" title="Change password"></button>
       <button class="icon-btn" id="lockBtn" aria-label="Sign out" title="Sign out"></button>
     </div>
   </aside>
@@ -393,20 +424,17 @@ body.modal-open{overflow:hidden}
 
 <script>
 'use strict';
+/* =================== connection =================== */
+const SUPABASE_URL = 'https://wsbqwkvasnqywjamqysc.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_xvwckFffIqijQiF3_xyVwA_IznTAOGV';
+const CV_BUCKET = 'candidate-resumes';
+const AI_FUNCTION = 'score-cv';
+const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }) : null;
 if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 /* =================== constants & helpers =================== */
-const STORE_KEY = 'hiro_ats_v4', LEGACY_KEY = 'hiro_agency_crm_state_v3';
 const STAGE_COLORS = { slate:'#94A3B8', blue:'#3B82F6', violet:'#7C5CFF', amber:'#F59E0B', teal:'#14B8A6', green:'#22A35A', rose:'#E5484D' };
 const STAGE_TYPES = { active:'In progress', submitted:'Submitted to client', interview:'Interviewing', offer:'Offer stage', joined:'Joined (counts as a placement)', rejected:'Rejected or dropped' };
-const AI_PRESETS = {
-  gemini:   { model:'gemini-2.5-flash', endpoint:'https://generativelanguage.googleapis.com/v1beta/models/' },
-  openai:   { model:'gpt-4.1-mini', endpoint:'https://api.openai.com/v1/chat/completions' },
-  groq:     { model:'llama-3.3-70b-versatile', endpoint:'https://api.groq.com/openai/v1/chat/completions' },
-  deepseek: { model:'deepseek-chat', endpoint:'https://api.deepseek.com/chat/completions' },
-  custom:   { model:'', endpoint:'' }
-};
-const AI_NAMES = { gemini:'Google Gemini', openai:'OpenAI', groq:'Groq', deepseek:'DeepSeek', custom:'Other (OpenAI-compatible)' };
 const REJECT_REASONS = ['Not a fit for the role','Salary expectation too high','Notice period too long','Rejected by client','Candidate dropped out','Didn’t respond','Other'];
 const INVOICE = { pending:'Not raised', raised:'Invoice sent', paid:'Paid' };
 const EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
@@ -414,19 +442,19 @@ const EMAIL_FULL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const uid = p => p + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const nowISO = () => new Date().toISOString();
 const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
 const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
 const last10 = p => String(p || '').replace(/\D/g, '').slice(-10);
 const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'export';
+const todayISO = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset()*60000).toISOString().slice(0,10); };
 function startOfToday(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
 function addDaysDate(v, days){ const d = new Date(v); d.setDate(d.getDate() + Number(days || 0)); return d; }
 function fmtDate(v){ if (!v) return '—'; const d = new Date(v); return isNaN(d) ? '—' : d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }); }
 function fmtShort(v){ if (!v) return '—'; const d = new Date(v); return isNaN(d) ? '—' : d.toLocaleDateString('en-IN', { day:'numeric', month:'short' }); }
 function fmtDateTime(v){ if (!v) return '—'; const d = new Date(v); return isNaN(d) ? '—' : d.toLocaleString('en-IN', { day:'numeric', month:'short', hour:'numeric', minute:'2-digit' }); }
-function fmtTime(v){ const d = new Date(v); return d.toLocaleTimeString('en-IN', { hour:'numeric', minute:'2-digit' }); }
+function fmtTime(v){ return new Date(v).toLocaleTimeString('en-IN', { hour:'numeric', minute:'2-digit' }); }
 function timeAgo(v){ const s = (Date.now() - new Date(v)) / 1000; if (s < 60) return 'just now'; if (s < 3600) return Math.floor(s/60) + 'm ago'; if (s < 86400) return Math.floor(s/3600) + 'h ago'; if (s < 604800) return Math.floor(s/86400) + 'd ago'; return fmtShort(v); }
 function toLocalInput(iso){ if (!iso) return ''; const d = new Date(iso); if (isNaN(d)) return ''; return new Date(d - d.getTimezoneOffset()*60000).toISOString().slice(0,16); }
 const inr = n => '₹' + Math.round(n || 0).toLocaleString('en-IN');
@@ -434,6 +462,7 @@ const lpa = n => num(n) ? `₹${num(n)} LPA` : '—';
 const initials = n => String(n || '?').trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?';
 const titleCase = s => s.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
 const firstName = n => String(n || '').trim().split(/\s+/)[0] || '';
+const appUrl = () => location.href.split('#')[0].split('?')[0];
 
 const ICONS = {
   grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
@@ -459,6 +488,7 @@ const ICONS = {
   alert:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
   lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  key:'<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M14 9l2 2"/>',
   mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
   phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
   left:'<path d="M15 6l-6 6 6 6"/>', right:'<path d="M9 6l6 6-6 6"/>',
@@ -466,144 +496,28 @@ const ICONS = {
 };
 const icon = (n, s = 18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
-async function hashPin(id, pin){
-  const msg = 'hiro:' + id + ':' + pin;
-  if (window.crypto && crypto.subtle) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
-    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
-  }
-  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
-  for (let i = 0; i < msg.length; i++){ const ch = msg.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
-  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-  return 'f' + (h2 >>> 0).toString(16) + (h1 >>> 0).toString(16);
+/* =================== database helpers =================== */
+function friendlyError(e, what){
+  const m = (e && (e.message || e.error_description)) || String(e);
+  const code = e && e.code;
+  if (code === 'PGRST205' || code === '42P01' || /schema cache|does not exist/i.test(m)) return 'The database isn’t set up yet. Run 02-hiro-schema.sql in the Supabase SQL editor, then reload.';
+  if (/at least one active admin/i.test(m)) return 'Hiro needs at least one active admin. Make someone else an admin first.';
+  if (code === '42501' || /row-level security|permission denied|not allowed/i.test(m)) return `You don’t have permission to ${what || 'do that'}.`;
+  if (/failed to fetch|networkerror|load failed/i.test(m)) return 'Can’t reach the database. Check your internet connection and try again.';
+  if (/mime type|invalid_mime/i.test(m)) return 'That file type can’t be stored. Use PDF, .docx or .txt.';
+  if (/exceeded the maximum allowed size|payload too large|entity too large/i.test(m)) return 'That file is larger than 5 MB.';
+  return `Couldn’t ${what || 'save'}. ${m}`;
 }
+async function db(promise, what){
+  const { data, error } = await promise;
+  if (error) { console.error(what, error); throw new Error(friendlyError(error, what)); }
+  return data;
+}
+function blankState(){ return { stages:[], users:[], clients:[], jobs:[], candidates:[], activity:[] }; }
 
-/* =================== CV file storage (IndexedDB) =================== */
-const CVDB = {
-  _db: null,
-  open(){ return this._db || (this._db = new Promise((res, rej) => { const r = indexedDB.open('hiro_cv_store', 1); r.onupgradeneeded = () => r.result.createObjectStore('files'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); })); },
-  async run(mode, fn){ const db = await this.open(); return new Promise((res, rej) => { const tx = db.transaction('files', mode); const req = fn(tx.objectStore('files')); tx.oncomplete = () => res(req && req.result); tx.onerror = () => rej(tx.error); }); },
-  put(id, blob){ return this.run('readwrite', s => s.put(blob, id)); },
-  get(id){ return this.run('readonly', s => s.get(id)); },
-  del(id){ return this.run('readwrite', s => s.delete(id)).catch(() => {}); },
-  clear(){ return this.run('readwrite', s => s.clear()); }
-};
-
-/* =================== state =================== */
-function makeCandidate(p){
-  return Object.assign({
-    id: uid('cand'), jobId: null, name: '', email: '', phone: '', company: '', title: '',
-    expYears: 0, currentCTC: 0, expectedCTC: 0, offeredCTC: 0, noticeDays: 0, atsScore: 0,
-    matchedSkills: [], missingSkills: [], feedback: '', stage: null,
-    interviewAt: '', joiningDate: '', invoiceStatus: 'pending', rejectReason: '',
-    notes: [], history: [], uploadedBy: null, hasCV: false, cvName: '', source: 'manual',
-    createdAt: nowISO(), updatedAt: nowISO()
-  }, p);
-}
-
-function makeDefaultState(){
-  const ADMIN = '11111111-1111-1111-1111-111111111111', RAHUL = '22222222-2222-2222-2222-222222222222', PRIYA = '33333333-3333-3333-3333-333333333333';
-  const inTwoDays = new Date(); inTwoDays.setDate(inTwoDays.getDate() + 2); inTwoDays.setHours(15, 0, 0, 0);
-  return {
-    version: 4, meta: { pinChanged: false },
-    stages: [
-      { id:'stg_sourced', label:'Sourced', color:'slate', type:'active' },
-      { id:'stg_screening', label:'Screening', color:'blue', type:'active' },
-      { id:'stg_submitted', label:'Submitted to client', color:'violet', type:'submitted' },
-      { id:'stg_interview', label:'Interviewing', color:'amber', type:'interview' },
-      { id:'stg_offered', label:'Offer made', color:'teal', type:'offer' },
-      { id:'stg_joined', label:'Joined', color:'green', type:'joined' },
-      { id:'stg_rejected', label:'Rejected or dropped', color:'rose', type:'rejected' }
-    ],
-    users: [
-      { id:ADMIN, name:'Sai Kiran Singanamala', email:'kiran@hiro.in', pin:'1234', role:'admin', canDownloadCV:true, canExportCSV:true, canViewCommercials:true, active:true },
-      { id:RAHUL, name:'Rahul Sharma', email:'rahul@hiro.in', pin:'1111', role:'recruiter', canDownloadCV:false, canExportCSV:false, canViewCommercials:false, active:true },
-      { id:PRIYA, name:'Priya Patel', email:'priya@hiro.in', pin:'2222', role:'recruiter', canDownloadCV:false, canExportCSV:false, canViewCommercials:false, active:true }
-    ],
-    clients: [
-      { id:'cli-1', name:'NextGen FinTech Ltd', industry:'Financial services', spocName:'Vikram Malhotra', spocEmail:'vikram@nextgenfin.com', spocPhone:'', feePercent:8.33, guaranteeDays:90, creditDays:30 },
-      { id:'cli-2', name:'Apex HealthTech Labs', industry:'Digital health', spocName:'Sneha Kapoor', spocEmail:'sneha@apexhealth.io', spocPhone:'', feePercent:10, guaranteeDays:60, creditDays:15 }
-    ],
-    jobs: [
-      { id:'job-1', clientId:'cli-1', title:'Senior Full Stack Engineer', location:'Hyderabad, hybrid', budgetLPA:28, minExp:4, maxExp:8, openings:2, status:'open', skills:['React','Node.js','PostgreSQL','AWS'], jdText:'Senior full stack engineer to build React front ends and Node.js microservices on AWS.', assignedRecruiterIds:[RAHUL], createdAt:nowISO() },
-      { id:'job-2', clientId:'cli-2', title:'Product Manager, Core Mobile', location:'Bengaluru', budgetLPA:24, minExp:3, maxExp:6, openings:1, status:'open', skills:['Product roadmap','Wireframing','SQL','Analytics'], jdText:'Own the roadmap for a fast-growing consumer health app.', assignedRecruiterIds:[PRIYA], createdAt:nowISO() }
-    ],
-    candidates: [
-      makeCandidate({ id:'cand-1', jobId:'job-1', name:'Aditya Verma', phone:'+91 98450 12345', company:'Infosys', title:'Senior Software Engineer', expYears:5.5, currentCTC:16, expectedCTC:24, noticeDays:30, atsScore:92, matchedSkills:['React','Node.js','PostgreSQL','AWS'], feedback:'Strong match on the full stack. Expected CTC fits within the 28 LPA budget.', stage:'stg_interview', interviewAt:inTwoDays.toISOString(), uploadedBy:RAHUL }),
-      makeCandidate({ id:'cand-2', jobId:'job-1', name:'Naveen Kumar', email:'naveen.k@example.com', phone:'+91 97110 56789', company:'Wipro', title:'Full Stack Developer', expYears:4, currentCTC:13, expectedCTC:20, noticeDays:60, atsScore:72, matchedSkills:['React','Node.js'], missingSkills:['PostgreSQL','AWS'], feedback:'Solid front-end work. Would need to pick up AWS.', stage:'stg_screening', uploadedBy:RAHUL })
-    ],
-    activity: [],
-    aiConfig: { provider:'gemini', ...AI_PRESETS.gemini, apiKey:'' }
-  };
-}
-
-function normalizeState(s){
-  const d = makeDefaultState();
-  if (!s || typeof s !== 'object') s = d;
-  s.version = 4;
-  s.meta = Object.assign({ pinChanged:false }, s.meta || {});
-  if (!Array.isArray(s.stages) || !s.stages.length) s.stages = d.stages;
-  const legacyType = { stg_submitted:'submitted', stg_interview:'interview', stg_offered:'offer', stg_joined:'joined', stg_rejected:'rejected' };
-  const legacyColor = { 'border-gray-300':'slate', 'border-blue-400':'blue', 'border-purple-500':'violet', 'border-amber-400':'amber', 'border-emerald-400':'teal', 'border-emerald-600':'green', 'border-rose-400':'rose' };
-  s.stages.forEach(st => {
-    if (!STAGE_COLORS[st.color]) st.color = legacyColor[st.color] || 'slate';
-    if (!STAGE_TYPES[st.type]) st.type = legacyType[st.id] || 'active';
-    st.label = String(st.label || 'Stage').replace(/^\d+\.\s*/, '');
-  });
-  s.users = Array.isArray(s.users) && s.users.length ? s.users : d.users;
-  s.clients = Array.isArray(s.clients) ? s.clients : [];
-  s.jobs = Array.isArray(s.jobs) ? s.jobs : [];
-  s.candidates = Array.isArray(s.candidates) ? s.candidates : [];
-  s.activity = Array.isArray(s.activity) ? s.activity : [];
-  s.jobs.forEach(j => {
-    j.assignedRecruiterIds = Array.isArray(j.assignedRecruiterIds) ? j.assignedRecruiterIds : [];
-    j.skills = Array.isArray(j.skills) ? j.skills : [];
-    j.status = j.status || 'open'; j.openings = j.openings || 1; j.createdAt = j.createdAt || nowISO();
-    j.minExp = num(j.minExp); j.maxExp = num(j.maxExp) || 30;
-  });
-  s.users.forEach(u => {
-    (u.assignedJobIds || []).forEach(jid => { const j = s.jobs.find(x => x.id === jid); if (j && !j.assignedRecruiterIds.includes(u.id)) j.assignedRecruiterIds.push(u.id); });
-    delete u.assignedJobIds;
-    if (u.active === undefined) u.active = true;
-  });
-  const first = s.stages[0].id;
-  s.candidates = s.candidates.map(c => {
-    const m = makeCandidate(c);
-    if (!s.stages.find(st => st.id === m.stage)) m.stage = first;
-    ['matchedSkills','missingSkills','notes','history'].forEach(k => { if (!Array.isArray(m[k])) m[k] = []; });
-    ['email','phone','company','title','feedback'].forEach(k => { if (m[k] == null) m[k] = ''; });
-    return m;
-  });
-  s.aiConfig = Object.assign({ provider:'gemini', ...AI_PRESETS.gemini, apiKey:'' }, s.aiConfig || {});
-  if (s.aiConfig.model === 'gemini-1.5-flash') s.aiConfig.model = AI_PRESETS.gemini.model;
-  if (s.aiConfig.model === 'llama-3.1-70b-versatile') s.aiConfig.model = AI_PRESETS.groq.model;
-  return s;
-}
-
-function loadState(){
-  let raw = null, parsed = null;
-  try { raw = localStorage.getItem(STORE_KEY) || localStorage.getItem(LEGACY_KEY); } catch (e) {}
-  if (raw) { try { parsed = JSON.parse(raw); } catch (e) {} }
-  return normalizeState(parsed);
-}
-function save(){
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); return true; }
-  catch (e) { toast('Couldn’t save. Browser storage is full; export a backup and remove old candidates.', 'error'); return false; }
-}
-async function secureUsers(){
-  let changed = false;
-  if (!S.meta.pinChecked && S.users.some(u => u.pin)) S.meta.pinChanged = !S.users.some(u => u.role === 'admin' && String(u.pin) === '1234');
-  for (const u of S.users) {
-    if (u.pin !== undefined && u.pin !== null && u.pin !== '') { u.pinHash = await hashPin(u.id, String(u.pin)); delete u.pin; changed = true; }
-    else if (!u.pinHash) { delete u.pin; u.pinHash = await hashPin(u.id, '0000'); changed = true; }
-  }
-  if (!S.meta.pinChecked) { S.meta.pinChecked = true; changed = true; }
-  if (changed) save();
-}
-
-let S = loadState();
+let S = blankState();
 let me = null, view = 'dashboard', activeJobId = null, jobFilter = 'open', dragId = null, charts = [];
+let channel = null, reloadTimer = null, pendingReload = false, aiState = 'unknown';
 const pf = { q:'', min:0, sort:'score' };
 
 /* =================== permissions & lookups =================== */
@@ -618,15 +532,83 @@ const candById = id => S.candidates.find(c => c.id === id);
 const stageById = id => S.stages.find(s => s.id === id);
 const stageType = id => (stageById(id) || {}).type || 'active';
 const isClosedType = t => t === 'joined' || t === 'rejected';
-function accessibleJobs(){ if (!me) return []; return isAdmin() ? S.jobs : S.jobs.filter(j => j.assignedRecruiterIds.includes(me.id)); }
-function accessibleCandidates(){ const ids = new Set(accessibleJobs().map(j => j.id)); return S.candidates.filter(c => ids.has(c.jobId)); }
+function accessibleJobs(){ return S.jobs; } // the database only returns mandates you can see
+function accessibleCandidates(){ return S.candidates; }
 function feeFor(c){
   const job = jobById(c.jobId), client = job && clientById(job.clientId);
-  const pct = client ? num(client.feePercent) : 0;
+  if (c.placement) return { pct: num(c.placement.fee_percentage), ctc: num(c.placement.final_ctc_lpa), amount: num(c.placement.fee_amount_inr), client, job };
+  const pct = client && client.full ? num(client.feePercent) : 0;
   const ctc = num(c.offeredCTC) || num(c.expectedCTC);
   return { pct, ctc, amount: ctc * 100000 * pct / 100, client, job };
 }
-function logActivity(text, jobId){ S.activity.unshift({ at: nowISO(), by: me && me.id, text, jobId: jobId || null }); S.activity = S.activity.slice(0, 300); }
+function logActivity(text, jobId){
+  S.activity.unshift({ at: nowISO(), by: me && me.id, text, jobId: jobId || null });
+  sb.from('activity_log').insert({ actor_id: me.id, job_id: jobId || null, message: text }).then(({ error }) => { if (error) console.warn('activity', error); });
+}
+
+/* =================== mapping =================== */
+const mapUser = r => ({ id:r.id, name:r.full_name, email:r.email, role:r.role, canDownloadCV:!!r.can_download_cv, canExportCSV:!!r.can_export_csv, canViewCommercials:!!r.can_view_commercials, active:!!r.is_active, createdAt:r.created_at });
+const mapClient = r => ({ id:r.id, name:r.company_name, industry:r.industry || '', spocName:r.spoc_name || '', spocEmail:r.spoc_email || '', spocPhone:r.spoc_phone || '', feePercent:num(r.commission_percentage), guaranteeDays:r.replacement_guarantee_days, creditDays:r.payment_terms_days, status:r.status, full:true });
+const mapStage = r => ({ id:r.id, label:r.label, color:STAGE_COLORS[r.color] ? r.color : 'slate', type:r.stage_type, position:r.position });
+const mapJob = (r, assign) => ({ id:r.id, clientId:r.client_id, title:r.title, location:r.location || '', budgetLPA:num(r.budget_lpa), minExp:num(r.min_exp_years), maxExp:num(r.max_exp_years), openings:r.openings || 1, status:r.status, skills:r.required_skills || [], jdText:r.jd_content || '', assignedRecruiterIds:assign.filter(a => a.job_id === r.id).map(a => a.user_id), createdAt:r.created_at });
+function mapCandidate(r, contacts, ledger){
+  const ct = contacts.get(r.id), p = ledger.get(r.id) || null;
+  return { id:r.id, jobId:r.job_id, stage:r.stage_id, name:r.full_name, company:r.current_company || '', title:r.current_title || '',
+    expYears:num(r.total_exp_years), currentCTC:num(r.current_ctc_lpa), expectedCTC:num(r.expected_ctc_lpa), offeredCTC:num(r.offered_ctc_lpa),
+    noticeDays:r.notice_period_days || 0, atsScore:r.ats_score || 0, feedback:r.ats_feedback || '', matchedSkills:r.matched_skills || [], missingSkills:r.missing_skills || [],
+    interviewAt:r.interview_at || '', joiningDate:r.joining_date || '', rejectReason:r.reject_reason || '', source:r.source,
+    cvPath:r.cv_path || '', cvName:r.cv_file_name || '', hasCV:!!r.cv_path, uploadedBy:r.uploaded_by, createdAt:r.created_at, updatedAt:r.updated_at,
+    email: ct ? ct.email || '' : '', phone: ct ? ct.phone || '' : '', placement:p, invoiceStatus: p ? p.invoice_status : 'pending' };
+}
+const candidateRow = c => ({ full_name:c.name, current_company:c.company || null, current_title:c.title || null, total_exp_years:c.expYears || 0,
+  current_ctc_lpa:c.currentCTC || 0, expected_ctc_lpa:c.expectedCTC || 0, notice_period_days:c.noticeDays || 0, ats_score:c.atsScore || 0,
+  ats_feedback:c.feedback || null, matched_skills:c.matchedSkills || [], missing_skills:c.missingSkills || [] });
+
+async function loadAll(){
+  const fees = canFees(), contact = canContact();
+  const none = Promise.resolve([]);
+  const [stages, users, dir, clients, jobs, assign, cands, contacts, acts, ledger] = await Promise.all([
+    db(sb.from('pipeline_stages').select('*').order('position').order('created_at'), 'load stages'),
+    db(sb.from('agency_users').select('*').order('full_name'), 'load the team'),
+    db(sb.from('client_directory').select('*'), 'load clients'),
+    fees ? db(sb.from('clients').select('*').order('company_name'), 'load clients') : none,
+    db(sb.from('jobs').select('*').order('created_at'), 'load mandates'),
+    db(sb.from('job_recruiters').select('job_id,user_id'), 'load assignments'),
+    db(sb.from('candidates').select('*').order('created_at', { ascending:false }).limit(10000), 'load candidates'),
+    contact ? db(sb.from('candidate_contacts').select('candidate_id,email,phone').limit(10000), 'load contact details') : none,
+    db(sb.from('activity_log').select('*').order('created_at', { ascending:false }).limit(60), 'load activity'),
+    fees ? db(sb.from('placement_ledger').select('*'), 'load placements') : none
+  ]);
+  const cmap = new Map(clients.map(r => [r.id, mapClient(r)]));
+  dir.forEach(d => { if (!cmap.has(d.id)) cmap.set(d.id, { id:d.id, name:d.company_name, full:false }); });
+  const ctmap = new Map(contacts.map(c => [c.candidate_id, c]));
+  const lmap = new Map(ledger.map(p => [p.candidate_id, p]));
+  S = {
+    stages: stages.map(mapStage),
+    users: users.map(mapUser),
+    clients: [...cmap.values()].sort((a, b) => a.name.localeCompare(b.name)),
+    jobs: jobs.map(r => mapJob(r, assign)),
+    candidates: cands.map(r => mapCandidate(r, ctmap, lmap)),
+    activity: acts.map(a => ({ at:a.created_at, by:a.actor_id, text:a.message, jobId:a.job_id }))
+  };
+  const fresh = userById(me.id);
+  if (fresh) me = fresh;
+}
+async function refreshNow(){
+  try { await loadAll(); } catch (e) { toast(e.message, 'error'); return; }
+  if (!me.active) { showPending(); return; }
+  renderNav(); rerender();
+}
+function scheduleReload(){
+  clearTimeout(reloadTimer);
+  reloadTimer = setTimeout(() => { if (modalStack.length) { pendingReload = true; return; } refreshNow(); }, 700);
+}
+function subscribeRealtime(){
+  if (channel) sb.removeChannel(channel);
+  channel = sb.channel('hiro-live');
+  ['candidates','candidate_notes','jobs','pipeline_stages'].forEach(t => channel.on('postgres_changes', { event:'*', schema:'public', table:t }, scheduleReload));
+  channel.subscribe();
+}
 
 /* =================== UI primitives =================== */
 function toast(msg, kind = 'info', action){
@@ -636,7 +618,7 @@ function toast(msg, kind = 'info', action){
   if (action) { const b = document.createElement('button'); b.className = 'toast-action'; b.textContent = action.label; b.onclick = () => { el.remove(); action.run(); }; el.appendChild(b); }
   $('#toasts').appendChild(el);
   const all = $$('#toasts .toast'); if (all.length > 3) all.slice(0, all.length - 3).forEach(t => t.remove());
-  const ttl = action ? 7000 : 4200;
+  const ttl = action ? 7000 : kind === 'error' ? 6500 : 4200;
   setTimeout(() => el.classList.add('out'), ttl);
   setTimeout(() => el.remove(), ttl + 400);
 }
@@ -647,8 +629,8 @@ function openModal({ title, subtitle = '', body = '', footer = '', size = 'md', 
   wrap.innerHTML = `<div class="modal modal-${size}" role="dialog" aria-modal="true" aria-label="${esc(title)}" tabindex="-1">
     <header class="modal-head"><div><h2>${esc(title)}</h2>${subtitle ? `<p>${subtitle}</p>` : ''}</div><button class="icon-btn" data-close aria-label="Close">${icon('x')}</button></header>
     <div class="modal-body">${body}</div>${footer ? `<footer class="modal-foot">${footer}</footer>` : ''}</div>`;
-  wrap.addEventListener('mousedown', e => { if (e.target === wrap) closeModal(); });
-  $$('[data-close]', wrap).forEach(b => b.addEventListener('click', () => closeModal()));
+  wrap.addEventListener('mousedown', e => { if (e.target === wrap && !wrap._busy) closeModal(); });
+  $$('[data-close]', wrap).forEach(b => b.addEventListener('click', () => { if (!wrap._busy) closeModal(); }));
   $('#modal-root').appendChild(wrap);
   modalStack.push(wrap);
   document.body.classList.add('modal-open');
@@ -659,7 +641,7 @@ function openModal({ title, subtitle = '', body = '', footer = '', size = 'md', 
 function closeModal(){
   const w = modalStack.pop();
   if (w) { w.remove(); if (w._onClose) w._onClose(); }
-  if (!modalStack.length) document.body.classList.remove('modal-open');
+  if (!modalStack.length) { document.body.classList.remove('modal-open'); if (pendingReload) { pendingReload = false; refreshNow(); } }
 }
 function confirmDialog(message, { ok = 'Delete', danger = true } = {}){
   return new Promise(res => {
@@ -672,13 +654,21 @@ function confirmDialog(message, { ok = 'Delete', danger = true } = {}){
     setTimeout(() => $('[data-c=yes]', w).focus(), 50);
   });
 }
+// Runs an async save with the button disabled; shows errors in the form or as a toast.
+async function busy(btn, label, fn, errEl){
+  const w = btn.closest('.modal-backdrop'); const old = btn.innerHTML;
+  btn.disabled = true; btn.textContent = label; if (w) w._busy = true;
+  try { return await fn(); }
+  catch (e) { if (errEl) errEl.textContent = e.message; else toast(e.message, 'error'); return null; }
+  finally { btn.disabled = false; btn.innerHTML = old; if (w) w._busy = false; }
+}
 function ring(score, lg){
   const s = clamp(Math.round(score || 0), 0, 100);
   const c = s >= 85 ? 'var(--ring-top)' : s >= 70 ? 'var(--brand)' : s >= 50 ? 'var(--warn)' : 'var(--bad)';
   return `<div class="ring${lg ? ' lg' : ''}" style="--p:${s};--rc:${c}" title="Match score ${s} out of 100" aria-label="Match score ${s} out of 100"><span>${s}</span></div>`;
 }
 function pageHead(title, sub, actions = ''){ return `<header class="page-head"><div><h1>${esc(title)}</h1>${sub ? `<p class="page-sub">${sub}</p>` : ''}</div><div class="page-actions">${actions}</div></header>`; }
-function emptyState(title, text, action = ''){ return `<div class="empty"><b>${esc(title)}</b><p>${esc(text)}</p>${action}</div>`; }
+function emptyBlock(title, text, action = ''){ return `<div class="empty"><b>${esc(title)}</b><p>${esc(text)}</p>${action}</div>`; }
 function downloadBlob(blob, name){ const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 3000); }
 async function copyText(t){
   try { await navigator.clipboard.writeText(t); return true; }
@@ -686,60 +676,122 @@ async function copyText(t){
 }
 function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
 function killCharts(){ charts.forEach(c => c.destroy()); charts = []; }
-function rerender(){ if (view === 'pipeline' && $('#board')) renderBoard(); else render(); }
+function rerender(){ if (!me) return; if (view === 'pipeline' && $('#board')) renderBoard(); else render(); }
 
 const ACTIONS = {};
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]');
-  if (!el) return;
+  if (!el || el.disabled) return;
   const fn = ACTIONS[el.dataset.act];
   if (fn) { e.preventDefault(); fn(el.dataset.id, el, e); }
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && modalStack.length) { closeModal(); return; }
+  if (e.key === 'Escape' && modalStack.length && !modalStack[modalStack.length - 1]._busy) { closeModal(); return; }
   if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('cand')) openCandidate(e.target.dataset.id);
 });
 
-/* =================== auth =================== */
-let loginFails = 0, lockUntil = 0;
-function showLogin(){
+/* =================== screens: boot, sign-in, pending =================== */
+function showBoot(text){ $('#boot').hidden = false; $('#bootText').textContent = text || 'Loading Hiro…'; $('#login').hidden = true; $('#app').hidden = true; }
+let authMode = 'signin';
+function showAuth(message, isError){
   me = null; killCharts();
   while (modalStack.length) closeModal();
-  $('#app').hidden = true; $('#login').hidden = false;
-  const sel = $('#loginUser');
-  sel.innerHTML = S.users.filter(u => u.active).map(u => `<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');
-  const last = localStorage.getItem('hiro_last_user');
-  if (last && S.users.some(u => u.id === last && u.active)) sel.value = last;
-  $('#loginPin').value = ''; $('#loginError').textContent = '';
-  $('#loginHint').hidden = !!S.meta.pinChanged;
-  setTimeout(() => $('#loginPin').focus(), 60);
+  if (channel) { sb.removeChannel(channel); channel = null; }
+  $('#boot').hidden = true; $('#app').hidden = true; $('#login').hidden = false;
+  $('#authForm').hidden = false; $('#pendingBox').hidden = true;
+  setAuthMode(authMode);
+  $('#authError').textContent = isError ? (message || '') : '';
+  $('#authNote').textContent = !isError ? (message || '') : '';
+  setTimeout(() => $('#authEmail').focus(), 60);
 }
-async function submitLogin(e){
+function setAuthMode(mode){
+  authMode = mode;
+  const t = { signin:['Sign in','Use the email and password for your Hiro account.','Sign in','New here? Create an account'],
+              signup:['Create your account','Your admin will turn your account on before you can see any data.','Create account','Have an account? Sign in'],
+              reset:['Reset your password','We’ll email you a link to set a new password.','Send reset link','Back to sign in'] }[mode];
+  $('#authTitle').textContent = t[0]; $('#authSub').textContent = t[1]; $('#authSubmit').textContent = t[2]; $('#toggleMode').textContent = t[3];
+  $('#nameField').hidden = mode !== 'signup';
+  $('#passField').hidden = mode === 'reset';
+  $('#forgotBtn').hidden = mode !== 'signin';
+  $('#authPass').autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
+  $('#authError').textContent = ''; $('#authNote').textContent = '';
+}
+function showPending(email){
+  me = null; killCharts();
+  while (modalStack.length) closeModal();
+  if (channel) { sb.removeChannel(channel); channel = null; }
+  $('#boot').hidden = true; $('#app').hidden = true; $('#login').hidden = false;
+  $('#authForm').hidden = true; $('#pendingBox').hidden = false;
+  $('#pendingText').textContent = `Your account${email ? ` (${email})` : ''} is set up, but an admin needs to turn it on before you can see any data. Ask them to open Team in Hiro and switch you on.`;
+}
+async function submitAuth(e){
   e.preventDefault();
-  const err = $('#loginError');
-  if (Date.now() < lockUntil) { err.textContent = `Too many wrong tries. Wait ${Math.ceil((lockUntil - Date.now())/1000)} seconds and try again.`; return; }
-  const u = userById($('#loginUser').value), pin = $('#loginPin').value.trim();
-  if (!u || !pin) { err.textContent = 'Choose your name and enter your PIN.'; return; }
-  if (await hashPin(u.id, pin) !== u.pinHash) {
-    if (++loginFails >= 5) { lockUntil = Date.now() + 30000; loginFails = 0; }
-    err.textContent = 'That PIN doesn’t match. Check it and try again.';
-    $('#loginPin').select(); return;
-  }
-  loginFails = 0;
-  sessionStorage.setItem('hiro_session', u.id);
-  localStorage.setItem('hiro_last_user', u.id);
-  enterApp(u);
+  const err = $('#authError'), note = $('#authNote'), btn = $('#authSubmit');
+  err.textContent = ''; note.textContent = '';
+  const email = $('#authEmail').value.trim(), pass = $('#authPass').value, name = $('#authName').value.trim();
+  if (!EMAIL_FULL.test(email)) { err.textContent = 'Enter a valid email address.'; return; }
+  if (authMode !== 'reset' && pass.length < 6) { err.textContent = 'Passwords are at least 6 characters.'; return; }
+  if (authMode === 'signup' && !name) { err.textContent = 'Enter your full name.'; return; }
+  const old = btn.textContent; btn.disabled = true; btn.textContent = 'Please wait…';
+  try {
+    if (authMode === 'signin') {
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+      if (error) { err.textContent = /confirm/i.test(error.message) ? 'Confirm your email first. Check your inbox for the link.' : /invalid/i.test(error.message) ? 'That email and password don’t match.' : friendlyError(error, 'sign in'); return; }
+      await startSession(data.user);
+    } else if (authMode === 'signup') {
+      const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: name }, emailRedirectTo: appUrl() } });
+      if (error) { err.textContent = /registered|exists/i.test(error.message) ? 'That email already has an account. Sign in instead.' : friendlyError(error, 'create the account'); return; }
+      if (data.session) await startSession(data.user);
+      else { setAuthMode('signin'); $('#authEmail').value = email; note.textContent = 'Account created. Check your email for a confirmation link, then sign in.'; }
+    } else {
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: appUrl() });
+      if (error) { err.textContent = friendlyError(error, 'send the link'); return; }
+      note.textContent = 'If that email has an account, a reset link is on its way.';
+    }
+  } finally { btn.disabled = false; if (btn.textContent === 'Please wait…') btn.textContent = old; }
 }
-function enterApp(u){
-  me = u;
-  $('#login').hidden = true; $('#app').hidden = false;
-  $('#meName').textContent = u.name;
-  $('#meRole').textContent = u.role === 'admin' ? 'Admin' : 'Recruiter';
-  $('#meAvatar').textContent = initials(u.name);
+async function startSession(user){
+  showBoot('Loading your workspace…');
+  let row;
+  try { row = await db(sb.from('agency_users').select('*').eq('id', user.id).maybeSingle(), 'load your account'); }
+  catch (e) { showAuth(e.message, true); return; }
+  if (!row || !row.is_active) { showPending(user.email); return; }
+  me = mapUser(row);
+  try { await loadAll(); }
+  catch (e) { showAuth(e.message, true); return; }
+  enterApp();
+  subscribeRealtime();
+}
+function enterApp(){
+  $('#boot').hidden = true; $('#login').hidden = true; $('#app').hidden = false;
+  $('#meName').textContent = me.name;
+  $('#meRole').textContent = me.role === 'admin' ? 'Admin' : 'Recruiter';
+  $('#meAvatar').textContent = initials(me.name);
   go(sessionStorage.getItem('hiro_view') || 'dashboard');
-  if (isAdmin() && !S.meta.pinChanged) toast('You’re still using the default admin PIN. Change it so others can’t sign in as you.', 'warn', { label:'Change PIN', run:() => openUserForm(me.id) });
+  const waiting = isAdmin() ? S.users.filter(u => !u.active).length : 0;
+  if (waiting) toast(`${waiting} account${waiting > 1 ? 's are' : ' is'} waiting for you to turn ${waiting > 1 ? 'them' : 'it'} on.`, 'warn', { label:'Open Team', run:() => go('team') });
 }
-function logout(){ sessionStorage.removeItem('hiro_session'); sessionStorage.removeItem('hiro_view'); showLogin(); }
+async function logout(){
+  sessionStorage.removeItem('hiro_view');
+  await sb.auth.signOut();
+  authMode = 'signin';
+  showAuth('You’re signed out.');
+}
+function openPasswordModal(recovery){
+  const w = openModal({ title: recovery ? 'Set a new password' : 'Change password', size:'sm',
+    body:`<label class="field"><span>New password</span><input class="input" type="password" id="np1" autocomplete="new-password" minlength="6"></label>
+      <label class="field"><span>Type it again</span><input class="input" type="password" id="np2" autocomplete="new-password"></label>
+      <p class="help" style="margin:0">At least 6 characters. A 6-digit PIN works too.</p><p class="form-error" id="npErr" role="alert"></p>`,
+    footer:`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" id="npSave">Save password</button>` });
+  $('#npSave', w).onclick = () => busy($('#npSave', w), 'Saving…', async () => {
+    const a = $('#np1', w).value, b = $('#np2', w).value;
+    if (a.length < 6) throw new Error('Use at least 6 characters.');
+    if (a !== b) throw new Error('The two passwords don’t match.');
+    const { error } = await sb.auth.updateUser({ password: a });
+    if (error) throw new Error(friendlyError(error, 'change the password'));
+    closeModal(); toast('Password updated.', 'success');
+  }, $('#npErr', w));
+}
 
 /* =================== navigation =================== */
 const VIEWS = [
@@ -780,7 +832,6 @@ function renderDashboard(){
   const joined = cands.filter(c => stageType(c.stage) === 'joined');
   const joinedMonth = joined.filter(c => { const d = new Date(c.joiningDate || c.updatedAt); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
   const h = now.getHours(), greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-
   const kpis = [
     ['Open mandates', openJobs.length, `${jobs.length} in total`],
     ['Active candidates', active.length, `${withClient.length} with clients`],
@@ -792,22 +843,23 @@ function renderDashboard(){
     const unpaid = joined.filter(c => c.invoiceStatus !== 'paid').reduce((s, c) => s + feeFor(c).amount, 0);
     kpis.push(['Placement fees', inr(billed), `${inr(unpaid)} still to collect`]);
   }
-
   const jobIds = new Set(jobs.map(j => j.id));
   const acts = S.activity.filter(a => !a.jobId || jobIds.has(a.jobId)).slice(0, 8);
   const health = openJobs.map(j => {
     const list = S.candidates.filter(c => c.jobId === j.id);
-    return { j, total: list.length, client: list.filter(c => ['submitted','interview','offer'].includes(stageType(c.stage))).length, joined: list.filter(c => stageType(c.stage) === 'joined').length, days: Math.max(0, Math.floor((Date.now() - new Date(j.createdAt)) / 864e5)) };
+    return { j, total:list.length, client:list.filter(c => ['submitted','interview','offer'].includes(stageType(c.stage))).length, joined:list.filter(c => stageType(c.stage) === 'joined').length, days:Math.max(0, Math.floor((Date.now() - new Date(j.createdAt)) / 864e5)) };
   }).sort((a, b) => b.days - a.days);
+  const firstRun = isAdmin() && !S.clients.length;
 
   $('#view').innerHTML = `
     ${pageHead(`${greet}, ${firstName(me.name)}`, upcoming.length ? `You have ${upcoming.length} interview${upcoming.length > 1 ? 's' : ''} coming up this week.` : 'Here’s where your mandates stand today.')}
+    ${firstRun ? `<div class="alert info" style="margin-bottom:18px">${icon('info',16)}<span>Welcome to Hiro. Start by adding a client, then create a mandate for them. Team members can create an account from the sign-in page; you’ll switch them on in Team.</span></div>` : ''}
     <section class="kpi-strip">${kpis.map(k => `<div class="kpi"><div class="kpi-label">${k[0]}</div><div class="kpi-value">${esc(k[1])}</div><div class="kpi-foot">${esc(k[2])}</div></div>`).join('')}</section>
     <div class="dash">
       <div class="stack">
         <section class="panel">
           <div class="panel-head"><h2>Interviews this week</h2></div>
-          <div class="panel-body">${upcoming.length ? `<ul class="rows">${upcoming.map(c => { const d = new Date(c.interviewAt); const j = jobById(c.jobId); return `<li><button class="row" data-act="open-cand" data-id="${esc(c.id)}"><div class="date-block"><b>${d.getDate()}</b><span>${d.toLocaleDateString('en-IN',{ weekday:'short' })}</span></div><div class="row-main"><b>${esc(c.name)}</b><span>${esc(j ? j.title : '')}${j && clientById(j.clientId) ? ' for ' + esc(clientById(j.clientId).name) : ''}</span></div><div class="row-end"><b>${fmtTime(c.interviewAt)}</b>${esc(stageById(c.stage).label)}</div></button></li>`; }).join('')}</ul>` : `<p class="empty-inline">No interviews in the next 7 days. Set a date from a candidate’s profile to see it here.</p>`}</div>
+          <div class="panel-body">${upcoming.length ? `<ul class="rows">${upcoming.map(c => { const d = new Date(c.interviewAt); const j = jobById(c.jobId); const cl = j && clientById(j.clientId); return `<li><button class="row" data-act="open-cand" data-id="${esc(c.id)}"><div class="date-block"><b>${d.getDate()}</b><span>${d.toLocaleDateString('en-IN',{ weekday:'short' })}</span></div><div class="row-main"><b>${esc(c.name)}</b><span>${esc(j ? j.title : '')}${cl ? ' for ' + esc(cl.name) : ''}</span></div><div class="row-end"><b>${fmtTime(c.interviewAt)}</b>${esc((stageById(c.stage) || {}).label || '')}</div></button></li>`; }).join('')}</ul>` : `<p class="empty-inline">No interviews in the next 7 days. Set a date from a candidate’s profile to see it here.</p>`}</div>
         </section>
         <section class="panel">
           <div class="panel-head"><h2>Open mandates</h2>${isAdmin() ? `<button class="btn btn-ghost btn-sm" data-act="new-job">${icon('plus',15)}New mandate</button>` : ''}</div>
@@ -821,7 +873,7 @@ function renderDashboard(){
         </section>
         ${isAdmin() ? `<section class="panel"><div class="panel-head"><h2>Team output</h2></div><div class="panel-body"><div class="chart-box"><canvas id="teamChart" aria-label="Candidates added and joined per team member"></canvas></div></div></section>` : ''}
         <section class="panel">
-          <div class="panel-head"><h2>Recent activity</h2></div>
+          <div class="panel-head"><h2>Recent activity</h2><span class="muted"><span class="sync-dot"></span>Live</span></div>
           <div class="panel-body">${acts.length ? `<ul class="rows">${acts.map(a => `<li><div class="row"><div class="row-main"><b style="font-weight:500;white-space:normal">${esc(a.text)}</b></div><div class="row-end">${timeAgo(a.at)}</div></div></li>`).join('')}</ul>` : `<p class="empty-inline">Activity from your team will show up here.</p>`}</div>
         </section>
       </div>
@@ -843,7 +895,7 @@ function drawTeam(){
     data:{ labels:users.map(u => firstName(u.name)), datasets:[
       { label:'Candidates added', data:users.map(u => S.candidates.filter(c => c.uploadedBy === u.id).length), backgroundColor:cssVar('--brand'), borderRadius:6, maxBarThickness:28 },
       { label:'Joined', data:users.map(u => S.candidates.filter(c => c.uploadedBy === u.id && stageType(c.stage) === 'joined').length), backgroundColor:cssVar('--ring-top'), borderRadius:6, maxBarThickness:28 } ] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, boxHeight:10, useBorderRadius:true, borderRadius:3 } } }, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 }, grid:{ color:cssVar('--line') }, border:{ display:false } }, x:{ grid:{ display:false }, border:{ display:false } } } } }));
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, boxHeight:10 } } }, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 }, grid:{ color:cssVar('--line') }, border:{ display:false } }, x:{ grid:{ display:false }, border:{ display:false } } } } }));
 }
 
 /* =================== pipeline =================== */
@@ -855,10 +907,11 @@ function mandateMeta(job){
 }
 function renderPipeline(){
   const jobs = accessibleJobs();
+  if (!S.stages.length) { $('#view').innerHTML = pageHead('Pipeline', '') + emptyBlock('No pipeline stages', 'Run 02-hiro-schema.sql again to add the default stages, or add one below.', isAdmin() ? `<button class="btn btn-primary" data-act="new-stage">${icon('plus')}Add stage</button>` : ''); return; }
   if (!jobs.length) {
     $('#view').innerHTML = pageHead('Pipeline', '') + (isAdmin()
-      ? emptyState('No mandates yet', 'Create a mandate to start building a candidate pipeline.', `<button class="btn btn-primary" data-act="new-job">${icon('plus')}New mandate</button>`)
-      : emptyState('No mandates assigned', 'You haven’t been added to a mandate yet. Ask your admin to assign you.'));
+      ? emptyBlock('No mandates yet', 'Create a mandate to start building a candidate pipeline.', `<button class="btn btn-primary" data-act="new-job">${icon('plus')}New mandate</button>`)
+      : emptyBlock('No mandates assigned', 'You haven’t been added to a mandate yet. Ask your admin to assign you.'));
     return;
   }
   if (!jobs.find(j => j.id === activeJobId)) activeJobId = (jobs.find(j => j.status === 'open') || jobs[0]).id;
@@ -904,9 +957,11 @@ function dupChecker(){
   S.candidates.forEach(c => { const p = last10(c.phone); if (p.length === 10) add('p' + p); const e = (c.email || '').trim().toLowerCase(); if (e) add('e' + e); });
   return c => { const p = last10(c.phone), e = (c.email || '').trim().toLowerCase(); return (p.length === 10 && m.get('p' + p) > 1) || (!!e && m.get('e' + e) > 1); };
 }
-function findDuplicates(c, excludeId){
-  const ph = last10(c.phone), em = (c.email || '').toLowerCase().trim();
-  return S.candidates.filter(o => o.id !== excludeId && ((ph.length === 10 && last10(o.phone) === ph) || (em && (o.email || '').toLowerCase().trim() === em)));
+async function findDuplicates(phone, email, excludeId){
+  if (last10(phone).length !== 10 && !String(email || '').trim()) return [];
+  const { data, error } = await sb.rpc('find_duplicate_candidates', { p_phone: phone || null, p_email: email || null, p_exclude: excludeId || null });
+  if (error) { console.warn('duplicates', error); return []; }
+  return data || [];
 }
 function cardHTML(c, isDup){
   const t0 = startOfToday();
@@ -924,9 +979,11 @@ function cardHTML(c, isDup){
 }
 function renderBoard(){
   const board = $('#board'); if (!board) return;
+  if (!jobById(activeJobId)) { renderPipeline(); return; }
   const list = filteredCandidates(), isDup = dupChecker(), filtering = !!(pf.q.trim() || pf.min);
   const total = S.candidates.filter(c => c.jobId === activeJobId).length;
   $('#candCount').textContent = filtering ? `Showing ${list.length} of ${total}` : `${total} candidate${total === 1 ? '' : 's'}`;
+  const scroll = board.scrollLeft;
   board.innerHTML = S.stages.map(st => {
     const cs = list.filter(c => c.stage === st.id);
     return `<section class="col" data-stage="${esc(st.id)}" style="--stage:${STAGE_COLORS[st.color]}">
@@ -935,7 +992,7 @@ function renderBoard(){
       <button class="col-add" data-act="add-cand" data-id="${esc(st.id)}">${icon('plus',15)}Add candidate</button>
     </section>`;
   }).join('') + (isAdmin() ? `<button class="col-new" data-act="new-stage">${icon('plus')}<span>Add stage</span></button>` : '');
-
+  board.scrollLeft = scroll;
   $$('.cand', board).forEach(el => {
     el.addEventListener('dragstart', e => { dragId = el.dataset.id; e.dataTransfer.setData('text/plain', dragId); e.dataTransfer.effectAllowed = 'move'; requestAnimationFrame(() => el.classList.add('dragging')); });
     el.addEventListener('dragend', () => { el.classList.remove('dragging'); $$('.col.over', board).forEach(c => c.classList.remove('over')); dragId = null; });
@@ -946,30 +1003,49 @@ function renderBoard(){
     col.addEventListener('drop', e => { e.preventDefault(); col.classList.remove('over'); const id = dragId || e.dataTransfer.getData('text/plain'); if (id) moveCandidate(id, col.dataset.stage); });
   });
 }
-function moveCandidate(id, stageId){
+async function moveCandidate(id, stageId){
   const c = candById(id), to = stageById(stageId);
-  if (!c || !to || c.stage === stageId) return;
-  c.history.push({ at: nowISO(), by: me.id, from: c.stage, to: stageId });
-  c.stage = stageId; c.updatedAt = nowISO();
+  if (!c || !to || c.stage === stageId) return false;
+  const prev = c.stage;
+  c.stage = stageId; rerender();
+  try { await db(sb.from('candidates').update({ stage_id: stageId }).eq('id', id), 'move this candidate'); }
+  catch (e) { c.stage = prev; rerender(); toast(e.message, 'error'); return false; }
   logActivity(`${firstName(me.name)} moved ${c.name} to ${to.label}`, c.jobId);
-  save(); rerender();
   if (to.type === 'joined' && (!c.joiningDate || !c.offeredCTC)) toast(`${c.name} joined. Add the joining date and final CTC so the invoice is right.`, 'success', { label:'Add details', run:() => openCandidate(c.id) });
   else if (to.type === 'interview' && !c.interviewAt) toast(`${c.name} moved to ${to.label}.`, 'info', { label:'Set date', run:() => openCandidate(c.id) });
   else if (to.type === 'rejected' && !c.rejectReason) toast(`${c.name} moved to ${to.label}.`, 'info', { label:'Add reason', run:() => openCandidate(c.id) });
   else toast(`${c.name} moved to ${to.label}.`);
+  scheduleReload();
+  return true;
+}
+async function updateCandidate(c, row, okMsg){
+  try { await db(sb.from('candidates').update(row).eq('id', c.id), 'save this change'); }
+  catch (e) { toast(e.message, 'error'); return false; }
+  if (okMsg) toast(okMsg, 'success');
+  scheduleReload();
+  return true;
 }
 
 /* ---------- candidate profile ---------- */
-function openCandidate(id){
+async function openCandidate(id){
   const c = candById(id); if (!c) return;
+  let notes = [], hist = [], dupes = [];
+  try {
+    [notes, hist, dupes] = await Promise.all([
+      db(sb.from('candidate_notes').select('*').eq('candidate_id', id).order('created_at', { ascending:false }), 'load notes'),
+      db(sb.from('stage_history').select('*').eq('candidate_id', id).order('changed_at', { ascending:false }), 'load history'),
+      findDuplicates(c.phone, c.email, c.id)
+    ]);
+  } catch (e) { toast(e.message, 'error'); }
   const job = jobById(c.jobId), type = stageType(c.stage);
-  const dupes = findDuplicates(c, c.id);
+  const who = uid => (userById(uid) || {}).name || 'Someone';
+  const stName = sid => (stageById(sid) || {}).label || 'a removed stage';
   const contact = canContact()
     ? `<div class="contact"><span>${icon('mail',15)}${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : 'No email'}</span><span>${icon('phone',15)}${c.phone ? `<a href="tel:${esc(c.phone.replace(/[^\d+]/g,''))}">${esc(c.phone)}</a>` : 'No phone'}</span>${c.hasCV ? `<span>${icon('file',15)}${esc(c.cvName || 'CV attached')}</span>` : ''}</div>`
     : `<div class="contact locked">${icon('lock',15)}Contact details and the CV are hidden for your role.</div>`;
   const timeline = [
-    ...c.notes.map(n => ({ at:n.at, html:`<li class="note"><div class="tl-meta">${esc((userById(n.by) || {}).name || 'Someone')} added a note, ${fmtDateTime(n.at)}</div><p>${esc(n.text)}</p></li>` })),
-    ...c.history.map(hh => ({ at:hh.at, html:`<li><div class="tl-meta">${fmtDateTime(hh.at)}, ${esc((userById(hh.by) || {}).name || 'Someone')}</div><p>${hh.from ? `Moved from ${esc((stageById(hh.from) || {}).label || 'a removed stage')} to ${esc((stageById(hh.to) || {}).label || 'a removed stage')}` : `Added to ${esc((stageById(hh.to) || {}).label || 'pipeline')}`}</p></li>` }))
+    ...notes.map(n => ({ at:n.created_at, html:`<li class="note"><div class="tl-meta">${esc(who(n.author_id))} added a note, ${fmtDateTime(n.created_at)}</div><p>${esc(n.body)}</p></li>` })),
+    ...hist.map(h => ({ at:h.changed_at, html:`<li><div class="tl-meta">${fmtDateTime(h.changed_at)}, ${esc(who(h.changed_by))}</div><p>${h.from_stage_id ? `Moved from ${esc(stName(h.from_stage_id))} to ${esc(stName(h.to_stage_id))}` : `Added to ${esc(stName(h.to_stage_id))}`}</p></li>` }))
   ].sort((a, b) => new Date(b.at) - new Date(a.at)).map(x => x.html).join('');
 
   const body = `
@@ -981,8 +1057,8 @@ function openCandidate(id){
         <div class="fact"><span>Notice</span><b>${c.noticeDays ? c.noticeDays + ' days' : '—'}</b></div>
       </div>
     </div>
-    ${job && c.expectedCTC > job.budgetLPA ? `<div class="alert warn">${icon('alert',16)}<span>Expected CTC is above the ${lpa(job.budgetLPA)} budget for this mandate.</span></div>` : ''}
-    ${dupes.length ? `<div class="alert">${icon('alert',16)}<span>Possible duplicate: same ${last10(dupes[0].phone) === last10(c.phone) && last10(c.phone).length === 10 ? 'phone number' : 'email'} as ${dupes.map(d => `<a href="#" data-act="open-dup" data-id="${esc(d.id)}">${esc(d.name)}</a> in ${esc((jobById(d.jobId) || {}).title || 'another mandate')}`).join(', ')}.</span></div>` : ''}
+    ${job && job.budgetLPA && c.expectedCTC > job.budgetLPA ? `<div class="alert warn">${icon('alert',16)}<span>Expected CTC is above the ${lpa(job.budgetLPA)} budget for this mandate.</span></div>` : ''}
+    ${dupes.length ? `<div class="alert">${icon('alert',16)}<span>Possible duplicate: same phone or email as ${dupes.map(d => candById(d.candidate_id) ? `<a href="#" data-act="open-dup" data-id="${esc(d.candidate_id)}">${esc(d.full_name)}</a> in ${esc(d.job_title)}` : `${esc(d.full_name)} in ${esc(d.job_title)}`).join(', ')}.</span></div>` : ''}
     <div class="form-grid">
       <label class="field"><span>Stage</span><select class="select" id="dStage">${S.stages.map(s => `<option value="${esc(s.id)}"${s.id === c.stage ? ' selected' : ''}>${esc(s.label)}</option>`).join('')}</select></label>
       <label class="field"><span>Next interview</span><input type="datetime-local" class="input" id="dInterview" value="${toLocalInput(c.interviewAt)}"></label>
@@ -992,7 +1068,7 @@ function openCandidate(id){
       ${type === 'rejected' ? `<label class="field span-2"><span>Reason</span><select class="select" id="dReason"><option value="">Choose a reason</option>${REJECT_REASONS.map(r => `<option${r === c.rejectReason ? ' selected' : ''}>${esc(r)}</option>`).join('')}</select></label>` : ''}
     </div>
     ${contact}
-    <section class="d-sec"><h3>Skills for this mandate</h3><div class="chips">${c.matchedSkills.map(s => `<span class="chip chip-good">${icon('check',11)} ${esc(s)}</span>`).join('')}${c.missingSkills.map(s => `<span class="chip chip-bad">Missing ${esc(s)}</span>`).join('') || ''}${!c.matchedSkills.length && !c.missingSkills.length ? '<span class="muted">No skills recorded.</span>' : ''}</div></section>
+    <section class="d-sec"><h3>Skills for this mandate</h3><div class="chips">${c.matchedSkills.map(s => `<span class="chip chip-good">${icon('check',11)} ${esc(s)}</span>`).join('')}${c.missingSkills.map(s => `<span class="chip chip-bad">Missing ${esc(s)}</span>`).join('')}${!c.matchedSkills.length && !c.missingSkills.length ? '<span class="muted">No skills recorded.</span>' : ''}</div></section>
     <section class="d-sec"><h3>Evaluation</h3><p class="eval">${esc(c.feedback || 'No evaluation yet. Edit the candidate to add one.')}</p></section>
     <section class="d-sec"><h3>Notes and history</h3>
       <div class="note-add"><label class="sr-only" for="dNote">New note</label><textarea id="dNote" class="input" rows="2" placeholder="Add a call note or client feedback"></textarea><button class="btn btn-primary btn-sm" id="dNoteBtn">Add note</button></div>
@@ -1006,21 +1082,23 @@ function openCandidate(id){
     <button class="btn btn-lime" data-act="pitch" data-id="${esc(c.id)}">${icon('copy',16)}Copy client pitch</button>`;
   const sub = esc([[c.title, c.company].filter(Boolean).join(' at '), job ? 'for ' + job.title : ''].filter(Boolean).join(', '));
   openModal({ title:c.name, subtitle:sub, body, footer, size:'lg', onMount: w => {
-    $('#dStage', w).onchange = e => { closeModal(); moveCandidate(c.id, e.target.value); openCandidate(c.id); };
-    $('#dInterview', w).onchange = e => {
-      c.interviewAt = e.target.value ? new Date(e.target.value).toISOString() : ''; c.updatedAt = nowISO();
-      if (c.interviewAt) logActivity(`${firstName(me.name)} scheduled an interview for ${c.name} on ${fmtDateTime(c.interviewAt)}`, c.jobId);
-      save(); rerender(); toast(c.interviewAt ? 'Interview date saved.' : 'Interview date cleared.', 'success');
+    $('#dStage', w).onchange = async e => { const v = e.target.value; closeModal(); if (await moveCandidate(c.id, v)) openCandidate(c.id); };
+    $('#dInterview', w).onchange = async e => {
+      const iso = e.target.value ? new Date(e.target.value).toISOString() : null;
+      if (await updateCandidate(c, { interview_at: iso }, iso ? 'Interview date saved.' : 'Interview date cleared.')) {
+        c.interviewAt = iso || '';
+        if (iso) logActivity(`${firstName(me.name)} scheduled an interview for ${c.name} on ${fmtDateTime(iso)}`, c.jobId);
+      }
     };
-    const off = $('#dOffered', w); if (off) off.onchange = e => { c.offeredCTC = num(e.target.value); save(); rerender(); toast('Final CTC saved.', 'success'); };
-    const jn = $('#dJoin', w); if (jn) jn.onchange = e => { c.joiningDate = e.target.value; save(); rerender(); toast('Joining date saved.', 'success'); };
-    const rs = $('#dReason', w); if (rs) rs.onchange = e => { c.rejectReason = e.target.value; save(); rerender(); toast('Reason saved.', 'success'); };
-    $('#dNoteBtn', w).onclick = () => {
+    const off = $('#dOffered', w); if (off) off.onchange = async e => { const v = e.target.value === '' ? null : num(e.target.value); if (await updateCandidate(c, { offered_ctc_lpa: v }, 'Final CTC saved.')) c.offeredCTC = num(v); };
+    const jn = $('#dJoin', w); if (jn) jn.onchange = async e => { const v = e.target.value || null; if (await updateCandidate(c, { joining_date: v }, 'Joining date saved.')) c.joiningDate = v || ''; };
+    const rs = $('#dReason', w); if (rs) rs.onchange = async e => { const v = e.target.value || null; if (await updateCandidate(c, { reject_reason: v }, 'Reason saved.')) c.rejectReason = v || ''; };
+    $('#dNoteBtn', w).onclick = () => busy($('#dNoteBtn', w), 'Adding…', async () => {
       const t = $('#dNote', w).value.trim(); if (!t) { $('#dNote', w).focus(); return; }
-      c.notes.push({ at: nowISO(), by: me.id, text: t }); c.updatedAt = nowISO();
+      await db(sb.from('candidate_notes').insert({ candidate_id: c.id, author_id: me.id, body: t }), 'add the note');
       logActivity(`${firstName(me.name)} added a note on ${c.name}`, c.jobId);
-      save(); closeModal(); openCandidate(c.id); toast('Note added.', 'success');
-    };
+      w._busy = false; closeModal(); openCandidate(c.id); toast('Note added.', 'success');
+    });
   }});
 }
 ACTIONS['open-cand'] = id => openCandidate(id);
@@ -1030,18 +1108,22 @@ ACTIONS['add-cand'] = id => openCandidateForm(null, id || null);
 ACTIONS['del-cand'] = async id => {
   const c = candById(id); if (!c) return;
   if (!(await confirmDialog(`Delete ${c.name} and their CV? This can’t be undone.`))) return;
-  S.candidates = S.candidates.filter(x => x.id !== id); CVDB.del(id);
-  logActivity(`${firstName(me.name)} deleted ${c.name}`, c.jobId);
-  save(); closeModal(); rerender(); toast(`${c.name} deleted.`);
-};
-ACTIONS['dl-cv'] = async id => {
-  const c = candById(id); if (!c || !canContact()) return;
   try {
-    const blob = await CVDB.get(id);
-    if (!blob) { toast('This CV isn’t stored in this browser. It may have been uploaded on another device.', 'error'); return; }
-    downloadBlob(blob, c.cvName || `${slug(c.name)}-cv`);
-    logActivity(`${firstName(me.name)} downloaded ${c.name}’s CV`, c.jobId); save();
-  } catch (e) { toast('Couldn’t open the CV file.', 'error'); }
+    if (c.cvPath) await sb.storage.from(CV_BUCKET).remove([c.cvPath]);
+    await db(sb.from('candidates').delete().eq('id', id), 'delete this candidate');
+  } catch (e) { toast(e.message, 'error'); return; }
+  S.candidates = S.candidates.filter(x => x.id !== id);
+  logActivity(`${firstName(me.name)} deleted ${c.name}`, c.jobId);
+  closeModal(); rerender(); toast(`${c.name} deleted.`);
+};
+ACTIONS['dl-cv'] = async (id, el) => {
+  const c = candById(id); if (!c || !c.cvPath || !canContact()) return;
+  await busy(el, 'Opening…', async () => {
+    const { data, error } = await sb.storage.from(CV_BUCKET).download(c.cvPath);
+    if (error) throw new Error(friendlyError(error, 'download the CV'));
+    downloadBlob(data, c.cvName || `${slug(c.name)}-cv`);
+    logActivity(`${firstName(me.name)} downloaded ${c.name}’s CV`, c.jobId);
+  });
 };
 ACTIONS.pitch = async id => {
   const c = candById(id); if (!c) return; const job = jobById(c.jobId);
@@ -1060,18 +1142,37 @@ ACTIONS.pitch = async id => {
   else toast('Couldn’t copy to the clipboard.', 'error');
 };
 
+/* ---------- CV storage ---------- */
+function guessMime(name){
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  return { pdf:'application/pdf', docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document', txt:'text/plain' }[ext] || '';
+}
+async function uploadCv(candId, jobId, file){
+  if (file.size > 5 * 1024 * 1024) throw new Error(`${file.name} is larger than 5 MB.`);
+  const type = guessMime(file.name);
+  if (!type) throw new Error(`${file.name} isn’t a PDF, .docx or .txt file.`);
+  const safe = file.name.replace(/[^\w.\-]+/g, '_').slice(-80);
+  const path = `${jobId}/${candId}/${Date.now()}-${safe}`;
+  const { error } = await sb.storage.from(CV_BUCKET).upload(path, file, { contentType: type, upsert: false });
+  if (error) throw new Error(friendlyError(error, 'upload the CV'));
+  await db(sb.from('candidates').update({ cv_path: path, cv_file_name: file.name }).eq('id', candId), 'save the CV link');
+  return path;
+}
+
 /* ---------- add / edit candidate ---------- */
 function openCandidateForm(id, stageId){
   const editing = id ? candById(id) : null;
   const job = jobById(editing ? editing.jobId : activeJobId);
   if (!job) { toast('Choose a mandate first.', 'error'); return; }
-  const c = editing || makeCandidate({ jobId: job.id, stage: stageId || S.stages[0].id });
+  const c = editing || { name:'', email:'', phone:'', company:'', title:'', expYears:0, currentCTC:0, expectedCTC:0, noticeDays:0, atsScore:0, matchedSkills:[], feedback:'', stage: stageId || S.stages[0].id, hasCV:false };
+  const showContact = !editing || canContact();
   const v = k => esc(c[k] ?? ''), n = k => num(c[k]) || '';
   const body = `
     <div class="form-grid">
       <label class="field span-2"><span>Full name</span><input class="input" id="fName" value="${v('name')}" autocomplete="off"></label>
+      ${showContact ? `
       <label class="field"><span>Email <i class="opt">optional</i></span><input class="input" id="fEmail" type="email" value="${v('email')}"></label>
-      <label class="field"><span>Phone</span><input class="input" id="fPhone" type="tel" value="${v('phone')}" placeholder="+91 98765 43210"></label>
+      <label class="field"><span>Phone</span><input class="input" id="fPhone" type="tel" value="${v('phone')}" placeholder="+91 98765 43210"></label>` : `<p class="help span-2" style="margin:0">${icon('lock',13)} Contact details are hidden for your role and won’t be changed.</p>`}
       <label class="field"><span>Current company</span><input class="input" id="fCompany" value="${v('company')}"></label>
       <label class="field"><span>Current title</span><input class="input" id="fTitle" value="${v('title')}"></label>
     </div>
@@ -1085,33 +1186,46 @@ function openCandidateForm(id, stageId){
     </div>
     <label class="field"><span>Skills</span><input class="input" id="fSkills" value="${esc(c.matchedSkills.join(', '))}" placeholder="${esc(job.skills.join(', ') || 'React, Node.js, SQL')}"><small class="help">Separate with commas. Leave the match score blank and Hiro works it out from the mandate’s skills (${esc(job.skills.join(', ') || 'none set')}) and experience range.</small></label>
     <label class="field"><span>Evaluation notes</span><textarea class="input" id="fFeedback" rows="3" placeholder="Why this candidate fits, concerns, client-ready summary">${esc(c.feedback)}</textarea></label>
-    <label class="field"><span>${c.hasCV ? 'Replace CV' : 'Attach CV'} <i class="opt">optional</i></span><input class="input file" id="fCv" type="file" accept=".pdf,.docx,.doc,.txt"></label>
+    <label class="field"><span>${c.hasCV ? 'Replace CV' : 'Attach CV'} <i class="opt">optional, up to 5 MB</i></span><input class="input file" id="fCv" type="file" accept=".pdf,.docx,.txt"></label>
     <p class="form-error" id="fError" role="alert"></p>`;
-  openModal({ title: editing ? `Edit ${c.name}` : 'Add candidate', subtitle: esc(`${job.title}`), body,
-    footer:`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" id="fSave">${editing ? 'Save changes' : 'Add candidate'}</button>`,
-    onMount: w => { $('#fSave', w).onclick = async () => {
-      const err = m => { $('#fError', w).textContent = m; };
-      const name = $('#fName', w).value.trim(), email = $('#fEmail', w).value.trim();
-      if (!name) return err('Enter the candidate’s name.');
-      if (email && !EMAIL_FULL.test(email)) return err('That email doesn’t look right. Fix it or leave it blank.');
-      const skills = $('#fSkills', w).value.split(',').map(s => s.trim()).filter(Boolean);
-      const lower = skills.map(s => s.toLowerCase());
-      const missing = job.skills.filter(s => !lower.includes(s.toLowerCase()));
-      const exp = num($('#fExp', w).value), rawScore = $('#fScore', w).value.trim();
-      const score = rawScore === '' ? scoreProfile(job.skills.length - missing.length, job.skills.length, exp, job) : clamp(Math.round(num(rawScore)), 0, 100);
-      Object.assign(c, { name, email, phone: $('#fPhone', w).value.trim(), company: $('#fCompany', w).value.trim(), title: $('#fTitle', w).value.trim(),
-        expYears: exp, currentCTC: num($('#fCur', w).value), expectedCTC: num($('#fExpCtc', w).value), noticeDays: Math.round(num($('#fNotice', w).value)),
-        atsScore: score, matchedSkills: skills, missingSkills: missing, feedback: $('#fFeedback', w).value.trim(), updatedAt: nowISO() });
-      const newStage = $('#fStage', w).value;
-      if (editing && newStage !== c.stage) { c.history.push({ at: nowISO(), by: me.id, from: c.stage, to: newStage }); c.stage = newStage; }
-      if (!editing) { c.stage = newStage; c.uploadedBy = me.id; c.history.push({ at: nowISO(), by: me.id, from: null, to: c.stage }); S.candidates.push(c); logActivity(`${firstName(me.name)} added ${c.name} to ${job.title}`, job.id); }
-      const file = $('#fCv', w).files[0];
-      if (file) { try { await CVDB.put(c.id, file); c.hasCV = true; c.cvName = file.name; } catch (e) { toast('Couldn’t store the CV file in this browser.', 'error'); } }
-      const dupes = findDuplicates(c, c.id);
-      save(); closeModal(); rerender();
-      toast(editing ? 'Changes saved.' : `${c.name} added.`, 'success');
-      if (dupes.length) toast(`Possible duplicate: ${dupes[0].name} is already in ${(jobById(dupes[0].jobId) || {}).title || 'another mandate'}.`, 'warn', { label:'View', run:() => openCandidate(dupes[0].id) });
-    }; } });
+  const w = openModal({ title: editing ? `Edit ${c.name}` : 'Add candidate', subtitle: esc(job.title), body,
+    footer:`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" id="fSave">${editing ? 'Save changes' : 'Add candidate'}</button>` });
+  $('#fSave', w).onclick = () => busy($('#fSave', w), 'Saving…', async () => {
+    const name = $('#fName', w).value.trim();
+    const email = showContact ? $('#fEmail', w).value.trim() : null;
+    const phone = showContact ? $('#fPhone', w).value.trim() : null;
+    if (!name) throw new Error('Enter the candidate’s name.');
+    if (email && !EMAIL_FULL.test(email)) throw new Error('That email doesn’t look right. Fix it or leave it blank.');
+    const file = $('#fCv', w).files[0];
+    if (file && !guessMime(file.name)) throw new Error('Attach a PDF, .docx or .txt file.');
+    const skills = $('#fSkills', w).value.split(',').map(s => s.trim()).filter(Boolean);
+    const lower = skills.map(s => s.toLowerCase());
+    const missing = job.skills.filter(s => !lower.includes(s.toLowerCase()));
+    const exp = num($('#fExp', w).value), rawScore = $('#fScore', w).value.trim();
+    const score = rawScore === '' ? scoreProfile(job.skills.length - missing.length, job.skills.length, exp, job) : clamp(Math.round(num(rawScore)), 0, 100);
+    const data = { name, company: $('#fCompany', w).value.trim(), title: $('#fTitle', w).value.trim(), expYears: exp, currentCTC: num($('#fCur', w).value),
+      expectedCTC: num($('#fExpCtc', w).value), noticeDays: Math.round(num($('#fNotice', w).value)), atsScore: score, matchedSkills: skills, missingSkills: missing,
+      feedback: $('#fFeedback', w).value.trim() };
+    const stage_id = $('#fStage', w).value;
+    let candId;
+    if (editing) {
+      candId = editing.id;
+      await db(sb.from('candidates').update({ ...candidateRow(data), stage_id }).eq('id', candId), 'save the candidate');
+      if (showContact) await db(sb.from('candidate_contacts').upsert({ candidate_id: candId, email: email || null, phone: phone || null }), 'save contact details');
+      logActivity(`${firstName(me.name)} updated ${name}`, job.id);
+    } else {
+      const ins = await db(sb.from('candidates').insert({ ...candidateRow(data), stage_id, job_id: job.id, uploaded_by: me.id, source: 'manual' }).select('id').single(), 'add the candidate');
+      candId = ins.id;
+      await db(sb.from('candidate_contacts').insert({ candidate_id: candId, email: email || null, phone: phone || null }), 'save contact details');
+      logActivity(`${firstName(me.name)} added ${name} to ${job.title}`, job.id);
+    }
+    if (file) { try { await uploadCv(candId, job.id, file); } catch (e) { toast(`Candidate saved, but the CV didn’t upload: ${e.message}`, 'error'); } }
+    const dupes = showContact ? await findDuplicates(phone, email, candId) : [];
+    w._busy = false; closeModal();
+    await refreshNow();
+    toast(editing ? 'Changes saved.' : `${name} added.`, 'success');
+    if (dupes.length) toast(`Possible duplicate: ${dupes[0].full_name} is already in ${dupes[0].job_title}.`, 'warn', candById(dupes[0].candidate_id) ? { label:'View', run:() => openCandidate(dupes[0].candidate_id) } : undefined);
+  }, $('#fError', w));
 }
 
 /* ---------- CV parsing & scoring ---------- */
@@ -1173,26 +1287,19 @@ function parseJSONLoose(t){
   const s = String(t || '').replace(/```json|```/g, '').trim();
   try { return JSON.parse(s); } catch (e) { const a = s.indexOf('{'), b = s.lastIndexOf('}'); if (a > -1 && b > a) return JSON.parse(s.slice(a, b + 1)); throw new Error('The AI reply wasn’t valid JSON'); }
 }
-async function aiComplete(prompt, cfg = S.aiConfig){
-  if (!cfg.apiKey) throw new Error('No API key added');
-  if (cfg.provider === 'gemini') {
-    const base = (cfg.endpoint || AI_PRESETS.gemini.endpoint).replace(/\/+$/, '') + '/';
-    const r = await fetch(`${base}${encodeURIComponent(cfg.model)}:generateContent`, { method:'POST', headers:{ 'Content-Type':'application/json', 'x-goog-api-key':cfg.apiKey },
-      body: JSON.stringify({ contents:[{ parts:[{ text:prompt }] }], generationConfig:{ responseMimeType:'application/json', temperature:0.2 } }) });
-    const d = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error((d.error && d.error.message) || `Request failed (${r.status})`);
-    const t = (((d.candidates || [])[0] || {}).content || {}).parts;
-    const text = t ? t.map(p => p.text || '').join('') : '';
-    if (!text) throw new Error('The model sent back an empty reply');
-    return text;
+// AI runs in a Supabase Edge Function so the API key never reaches the browser.
+async function aiComplete(prompt){
+  const { data, error } = await sb.functions.invoke(AI_FUNCTION, { body: { prompt } });
+  if (error) {
+    let msg = error.message || 'AI request failed', status = error.context && error.context.status;
+    try { const b = await error.context.json(); if (b && b.error) msg = b.error; } catch (e) {}
+    if (status === 404 || /failed to send|fetch/i.test(msg)) { aiState = 'missing'; msg = 'The score-cv function isn’t set up in Supabase yet'; }
+    else if (/not set up/i.test(msg)) aiState = 'missing';
+    throw new Error(msg);
   }
-  const r = await fetch(cfg.endpoint || AI_PRESETS.openai.endpoint, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${cfg.apiKey}` },
-    body: JSON.stringify({ model:cfg.model, messages:[{ role:'user', content:prompt }], temperature:0.2 }) });
-  const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error((d.error && d.error.message) || `Request failed (${r.status})`);
-  const text = d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content;
-  if (!text) throw new Error('The model sent back an empty reply');
-  return text;
+  if (!data || !data.text) throw new Error('The AI sent back an empty reply');
+  aiState = 'ok';
+  return { text: data.text, model: data.model };
 }
 async function aiProfile(text, fileName, job){
   if (String(text || '').trim().length < 30) throw new Error('No readable text in the file');
@@ -1211,7 +1318,7 @@ Return ONLY a JSON object with these keys:
 "totalExpYears" (number), "currentCtcLpa" (number, 0 if not stated), "expectedCtcLpa" (number, 0 if not stated), "noticePeriodDays" (number, 0 if not stated),
 "atsScore" (integer 0-100 for fit with the role), "matchedSkills" (array, only from the required skills), "missingSkills" (array, only from the required skills),
 "evaluation" (2-3 plain sentences). Never invent contact details or salary figures.`;
-  const o = parseJSONLoose(await aiComplete(prompt));
+  const o = parseJSONLoose((await aiComplete(prompt)).text);
   const h = heuristicProfile(text, fileName, job);
   return {
     name: String(o.name || '').trim() || h.name, email: EMAIL_FULL.test(String(o.email || '').trim()) ? String(o.email).trim() : h.email,
@@ -1230,15 +1337,17 @@ ACTIONS.upload = () => openUpload();
 function openUpload(){
   const job = jobById(activeJobId); if (!job) return;
   let files = [];
-  const aiOn = !!S.aiConfig.apiKey;
+  const aiNote = aiState === 'missing'
+    ? `AI scoring isn’t set up, so Hiro reads the name, email, phone and experience from each CV and scores on skill match.${isAdmin() ? ' See Settings to turn on AI.' : ''}`
+    : 'Hiro reads each CV and scores it against this mandate. If AI scoring isn’t available, it scores on skill match instead.';
   const w = openModal({ title:'Upload CVs', subtitle: esc(`Adds candidates to ${job.title}`), size:'md',
     body:`<div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose CV files">
         <div class="drop-icon">${icon('upload',22)}</div>
         <p><b>Drop CV files here</b> or click to choose</p>
-        <p class="muted">PDF, Word (.docx) or text, as many as you like.</p>
+        <p class="muted">PDF, Word (.docx) or text, up to 5 MB each.</p>
         <input type="file" id="cvInput" multiple accept=".pdf,.docx,.txt" hidden>
       </div>
-      <div class="alert ${aiOn ? 'info' : 'warn'}">${icon('info',16)}<span>${aiOn ? `AI scoring is on (${esc(AI_NAMES[S.aiConfig.provider] || 'AI')}). Name, contact, salary and notice are read from each CV.` : `AI scoring is off. Hiro will read the name, email, phone and experience from each CV and score on skill match. ${isAdmin() ? 'Add an AI key in Settings for fuller results.' : ''}`}</span></div>
+      <div class="alert ${aiState === 'missing' ? 'warn' : 'info'}">${icon('info',16)}<span>${aiNote}</span></div>
       <ul class="file-list" id="fileList"></ul>
       <div id="prog" hidden><div class="progress-row"><span id="progText"></span><span id="progPct"></span></div><div class="bar"><i id="progBar"></i></div></div>`,
     footer:`<button class="btn btn-ghost" data-close id="upCancel">Cancel</button><button class="btn btn-primary" id="upStart" disabled>Add candidates</button>` });
@@ -1250,9 +1359,11 @@ function openUpload(){
     $$('[data-rm]', w).forEach(b => b.onclick = () => { files.splice(+b.dataset.rm, 1); draw(); });
   };
   const addFiles = list => {
-    const ok = [...list].filter(f => /\.(pdf|docx|txt)$/i.test(f.name)), skipped = list.length - ok.length;
+    const all = [...list];
+    const ok = all.filter(f => guessMime(f.name) && f.size <= 5 * 1024 * 1024);
+    const skipped = all.length - ok.length;
     files = files.concat(ok); draw();
-    if (skipped) toast(`${skipped} file${skipped > 1 ? 's were' : ' was'} skipped. Use PDF, .docx or .txt (old .doc files can’t be read).`, 'warn');
+    if (skipped) toast(`${skipped} file${skipped > 1 ? 's were' : ' was'} skipped. Use PDF, .docx or .txt files up to 5 MB (old .doc files can’t be read).`, 'warn');
   };
   drop.onclick = () => input.click();
   drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } };
@@ -1262,31 +1373,36 @@ function openUpload(){
   drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); addFiles(e.dataTransfer.files); });
 
   $('#upStart', w).onclick = async () => {
+    w._busy = true;
     $('#upStart', w).disabled = true; $('#upCancel', w).disabled = true; drop.style.pointerEvents = 'none';
     $('#prog', w).hidden = false;
-    let added = 0, dupCount = 0, aiError = '';
+    let added = 0, dupCount = 0, failed = 0, aiError = '', firstStage = S.stages[0].id;
     for (let i = 0; i < files.length; i++) {
       const f = files[i];
       $('#progText', w).textContent = `Reading ${f.name}`;
       $('#progPct', w).textContent = `${i + 1} of ${files.length}`;
       $('#progBar', w).style.width = `${Math.round((i / files.length) * 100)}%`;
-      let text = '';
-      try { text = await extractText(f); } catch (e) {}
-      let prof = null;
-      if (aiOn && !aiError) { try { prof = await aiProfile(text, f.name, job); } catch (e) { aiError = e.message; } }
-      if (!prof) prof = heuristicProfile(text, f.name, job);
-      const c = makeCandidate({ ...prof, jobId: job.id, stage: S.stages[0].id, uploadedBy: me.id, source: 'cv-upload', cvName: f.name });
-      try { await CVDB.put(c.id, f); c.hasCV = true; } catch (e) {}
-      if (findDuplicates(c, null).length) dupCount++;
-      c.history.push({ at: nowISO(), by: me.id, from: null, to: c.stage });
-      S.candidates.push(c); added++;
+      try {
+        let text = '';
+        try { text = await extractText(f); } catch (e) {}
+        let prof = null;
+        if (aiState !== 'missing' && !aiError) { try { prof = await aiProfile(text, f.name, job); } catch (e) { aiError = e.message; } }
+        if (!prof) prof = heuristicProfile(text, f.name, job);
+        const ins = await db(sb.from('candidates').insert({ ...candidateRow(prof), job_id: job.id, stage_id: firstStage, uploaded_by: me.id, source: 'cv-upload' }).select('id').single(), 'add the candidate');
+        await db(sb.from('candidate_contacts').insert({ candidate_id: ins.id, email: prof.email || null, phone: prof.phone || null }), 'save contact details');
+        try { await uploadCv(ins.id, job.id, f); } catch (e) { console.warn(e); toast(`${f.name}: candidate added, but the file didn’t upload.`, 'warn'); }
+        if ((await findDuplicates(prof.phone, prof.email, ins.id)).length) dupCount++;
+        added++;
+      } catch (e) { failed++; console.error(f.name, e); if (failed === 1) toast(`${f.name}: ${e.message}`, 'error'); }
     }
     $('#progBar', w).style.width = '100%';
-    logActivity(`${firstName(me.name)} uploaded ${added} CV${added > 1 ? 's' : ''} to ${job.title}`, job.id);
-    save(); closeModal(); rerender();
-    toast(`${added} candidate${added > 1 ? 's' : ''} added to ${S.stages[0].label}.`, 'success');
+    if (added) logActivity(`${firstName(me.name)} uploaded ${added} CV${added > 1 ? 's' : ''} to ${job.title}`, job.id);
+    w._busy = false; closeModal();
+    await refreshNow();
+    if (added) toast(`${added} candidate${added > 1 ? 's' : ''} added to ${(stageById(firstStage) || {}).label || 'the pipeline'}.`, 'success');
+    if (failed) toast(`${failed} file${failed > 1 ? 's' : ''} couldn’t be added.`, 'error');
     if (dupCount) toast(`${dupCount} of them may already be in your database. Look for the duplicate tag.`, 'warn');
-    if (aiError) toast(`AI scoring stopped: ${aiError}. The rest were scored on skill match.`, 'error');
+    if (aiError) toast(`AI scoring didn’t run: ${aiError}. These were scored on skill match.`, isAdmin() ? 'warn' : 'info');
   };
 }
 
@@ -1298,7 +1414,7 @@ ACTIONS['export-csv'] = () => {
   const head = ['Name', ...(contact ? ['Email', 'Phone'] : []), 'Company', 'Title', 'Experience (yrs)', 'Current CTC (LPA)', 'Expected CTC (LPA)', 'Notice (days)', 'Match score', 'Stage', 'Next interview', 'Skills', 'Added on'];
   const rows = list.map(c => [c.name, ...(contact ? [c.email, c.phone] : []), c.company, c.title, c.expYears || '', c.currentCTC || '', c.expectedCTC || '', c.noticeDays || '', c.atsScore || 0, (stageById(c.stage) || {}).label, c.interviewAt ? fmtDateTime(c.interviewAt) : '', c.matchedSkills.join('; '), fmtDate(c.createdAt)].map(q).join(','));
   downloadBlob(new Blob(['\ufeff' + [head.map(q).join(','), ...rows].join('\r\n')], { type:'text/csv;charset=utf-8' }), `${slug(job.title)}-candidates.csv`);
-  logActivity(`${firstName(me.name)} exported ${list.length} candidates from ${job.title}`, job.id); save();
+  logActivity(`${firstName(me.name)} exported ${list.length} candidates from ${job.title}`, job.id);
   toast(`${list.length} candidates exported.`, 'success');
 };
 
@@ -1313,27 +1429,35 @@ function openStageForm(id){
     <label class="field"><span>Stage name</span><input class="input" id="sLabel" value="${esc(st.label)}" placeholder="e.g. Technical round 1"></label>
     <div class="field"><span>Colour</span><div class="swatches" role="radiogroup" aria-label="Colour">${Object.entries(STAGE_COLORS).map(([k, c]) => `<label class="swatch" style="--c:${c}"><input type="radio" name="sColor" value="${k}"${k === st.color ? ' checked' : ''} aria-label="${k}"><span></span></label>`).join('')}</div></div>
     <label class="field"><span>What this stage means</span><select class="select" id="sType">${Object.entries(STAGE_TYPES).map(([k, l]) => `<option value="${k}"${k === st.type ? ' selected' : ''}>${l}</option>`).join('')}</select>
-      <small class="help">Used for reports and billing. Candidates in a “Joined” stage appear in Placements; “Rejected” stages don’t count as active.</small></label>
+      <small class="help">Used for reports and billing. Moving someone into a “Joined” stage creates a placement; “Rejected” stages don’t count as active.</small></label>
     ${id ? `<div class="field"><span>Position on the board</span><div class="page-actions"><button class="btn btn-ghost btn-sm" id="sLeft"${idx === 0 ? ' disabled' : ''}>${icon('left',15)}Move left</button><button class="btn btn-ghost btn-sm" id="sRight"${idx === S.stages.length - 1 ? ' disabled' : ''}>Move right${icon('right',15)}</button></div></div>` : ''}
     <p class="form-error" id="sError" role="alert"></p>`;
   const w = openModal({ title: id ? 'Edit stage' : 'Add stage', size:'sm', body,
     footer:`${id && S.stages.length > 2 ? `<button class="btn btn-text danger" id="sDel">Delete stage</button><span class="spacer"></span>` : ''}<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" id="sSave">${id ? 'Save stage' : 'Add stage'}</button>` });
-  const move = dir => { const i = S.stages.findIndex(s => s.id === id), j = i + dir; [S.stages[i], S.stages[j]] = [S.stages[j], S.stages[i]]; save(); closeModal(); rerender(); openStageForm(id); };
-  if ($('#sLeft', w)) { $('#sLeft', w).onclick = () => move(-1); $('#sRight', w).onclick = () => move(1); }
-  $('#sSave', w).onclick = () => {
+  const move = (btn, dir) => busy(btn, 'Moving…', async () => {
+    const order = S.stages.map(s => s.id), i = order.indexOf(id), j = i + dir;
+    [order[i], order[j]] = [order[j], order[i]];
+    await Promise.all(order.map((sid, k) => db(sb.from('pipeline_stages').update({ position: k + 1 }).eq('id', sid), 'reorder stages')));
+    w._busy = false; closeModal(); await refreshNow(); openStageForm(id);
+  }, $('#sError', w));
+  if ($('#sLeft', w)) { $('#sLeft', w).onclick = e => move(e.currentTarget, -1); $('#sRight', w).onclick = e => move(e.currentTarget, 1); }
+  $('#sSave', w).onclick = () => busy($('#sSave', w), 'Saving…', async () => {
     const label = $('#sLabel', w).value.trim();
-    if (!label) { $('#sError', w).textContent = 'Give the stage a name.'; return; }
-    const color = ($('input[name=sColor]:checked', w) || {}).value || 'slate', type = $('#sType', w).value;
-    if (id) Object.assign(st, { label, color, type }); else S.stages.push({ id: uid('stg'), label, color, type });
-    save(); closeModal(); rerender(); toast(id ? 'Stage saved.' : `${label} added.`, 'success');
-  };
+    if (!label) throw new Error('Give the stage a name.');
+    const color = ($('input[name=sColor]:checked', w) || {}).value || 'slate', stage_type = $('#sType', w).value;
+    if (id) await db(sb.from('pipeline_stages').update({ label, color, stage_type }).eq('id', id), 'save the stage');
+    else await db(sb.from('pipeline_stages').insert({ label, color, stage_type, position: Math.max(0, ...S.stages.map(s => s.position || 0)) + 1 }), 'add the stage');
+    w._busy = false; closeModal(); await refreshNow(); toast(id ? 'Stage saved.' : `${label} added.`, 'success');
+  }, $('#sError', w));
   if ($('#sDel', w)) $('#sDel', w).onclick = async () => {
-    const inStage = S.candidates.filter(c => c.stage === id);
+    const inStage = S.candidates.filter(c => c.stage === id).length;
     const fallback = S.stages.find(s => s.id !== id);
-    if (!(await confirmDialog(inStage.length ? `Delete “${st.label}”? Its ${inStage.length} candidate${inStage.length > 1 ? 's' : ''} will move to “${fallback.label}”.` : `Delete “${st.label}”?`))) return;
-    inStage.forEach(c => { c.history.push({ at: nowISO(), by: me.id, from: id, to: fallback.id }); c.stage = fallback.id; });
-    S.stages = S.stages.filter(s => s.id !== id);
-    save(); closeModal(); rerender(); toast('Stage deleted.');
+    if (!(await confirmDialog(inStage ? `Delete “${st.label}”? Its ${inStage} candidate${inStage > 1 ? 's' : ''} will move to “${fallback.label}”.` : `Delete “${st.label}”?`))) return;
+    try {
+      await db(sb.from('candidates').update({ stage_id: fallback.id }).eq('stage_id', id), 'move the candidates');
+      await db(sb.from('pipeline_stages').delete().eq('id', id), 'delete the stage');
+    } catch (e) { toast(e.message, 'error'); return; }
+    closeModal(); await refreshNow(); toast('Stage deleted.');
   };
 }
 
@@ -1342,14 +1466,18 @@ ACTIONS['open-pipeline'] = id => { activeJobId = id; go('pipeline'); };
 ACTIONS['job-filter'] = id => { jobFilter = id; renderJobs(); };
 ACTIONS['new-job'] = () => openJobForm(null);
 ACTIONS['edit-job'] = id => openJobForm(id);
+async function removeCvFiles(cands){
+  const paths = cands.map(c => c.cvPath).filter(Boolean);
+  for (let i = 0; i < paths.length; i += 100) { const { error } = await sb.storage.from(CV_BUCKET).remove(paths.slice(i, i + 100)); if (error) console.warn('cv cleanup', error); }
+}
 ACTIONS['del-job'] = async id => {
   const j = jobById(id); if (!j) return;
   const cands = S.candidates.filter(c => c.jobId === id);
   if (!(await confirmDialog(`Delete “${j.title}”${cands.length ? ` and its ${cands.length} candidate${cands.length > 1 ? 's' : ''}` : ''}? This can’t be undone.`))) return;
-  cands.forEach(c => CVDB.del(c.id));
-  S.jobs = S.jobs.filter(x => x.id !== id); S.candidates = S.candidates.filter(c => c.jobId !== id);
+  try { await removeCvFiles(cands); await db(sb.from('jobs').delete().eq('id', id), 'delete the mandate'); }
+  catch (e) { toast(e.message, 'error'); return; }
   logActivity(`${firstName(me.name)} deleted the mandate ${j.title}`);
-  save(); render(); toast('Mandate deleted.');
+  await refreshNow(); toast('Mandate deleted.');
 };
 function renderJobs(){
   const jobs = accessibleJobs();
@@ -1360,9 +1488,9 @@ function renderJobs(){
       isAdmin() ? `<button class="btn btn-primary" data-act="new-job">${icon('plus')}New mandate</button>` : '')
     + (jobs.length ? `<div class="seg" role="group" aria-label="Filter by status">${seg}</div>` : '')
     + (list.length ? `<div class="job-grid">${list.map(jobCard).join('')}</div>`
-      : jobs.length ? emptyState('Nothing here', 'No mandates with this status.')
-      : isAdmin() ? emptyState('No mandates yet', 'Add a client, then create a mandate for the role they want filled.', `<button class="btn btn-primary" data-act="new-job">${icon('plus')}New mandate</button>`)
-      : emptyState('No mandates assigned', 'Ask your admin to add you to a mandate.'));
+      : jobs.length ? emptyBlock('Nothing here', 'No mandates with this status.')
+      : isAdmin() ? emptyBlock('No mandates yet', 'Add a client, then create a mandate for the role they want filled.', `<button class="btn btn-primary" data-act="new-job">${icon('plus')}New mandate</button>`)
+      : emptyBlock('No mandates assigned', 'Ask your admin to add you to a mandate.'));
 }
 function jobCard(j){
   const cands = S.candidates.filter(c => c.jobId === j.id);
@@ -1386,42 +1514,51 @@ function jobCard(j){
     </div>
   </article>`;
 }
+async function setJobRecruiters(jobId, ids){
+  await db(sb.from('job_recruiters').delete().eq('job_id', jobId), 'update assignments');
+  if (ids.length) await db(sb.from('job_recruiters').insert(ids.map(u => ({ job_id: jobId, user_id: u }))), 'update assignments');
+}
 function openJobForm(id){
   if (!isAdmin()) return;
-  if (!S.clients.length) { toast('Add a client first. Every mandate belongs to a client.', 'info', { label:'Add client', run:() => openClientForm(null) }); return; }
-  const j = id ? jobById(id) : { clientId: S.clients[0].id, title:'', location:'', budgetLPA:'', minExp:'', maxExp:'', openings:1, status:'open', skills:[], jdText:'', assignedRecruiterIds:[] };
+  const fullClients = S.clients.filter(c => c.full);
+  if (!fullClients.length) { toast('Add a client first. Every mandate belongs to a client.', 'info', { label:'Add client', run:() => openClientForm(null) }); return; }
+  const j = id ? jobById(id) : { clientId: fullClients[0].id, title:'', location:'', budgetLPA:'', minExp:'', maxExp:'', openings:1, status:'open', skills:[], jdText:'', assignedRecruiterIds:[] };
   const recruiters = S.users.filter(u => u.role === 'recruiter' && (u.active || j.assignedRecruiterIds.includes(u.id)));
   const body = `
     <div class="form-grid">
-      <label class="field"><span>Client</span><select class="select" id="jClient">${S.clients.map(c => `<option value="${esc(c.id)}"${c.id === j.clientId ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>
+      <label class="field"><span>Client</span><select class="select" id="jClient">${fullClients.map(c => `<option value="${esc(c.id)}"${c.id === j.clientId ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>
       <label class="field"><span>Status</span><select class="select" id="jStatus">${[['open','Open'],['hold','On hold'],['closed','Closed']].map(([k, l]) => `<option value="${k}"${k === j.status ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
       <label class="field span-2"><span>Job title</span><input class="input" id="jTitle" value="${esc(j.title)}" placeholder="e.g. Lead Frontend Engineer"></label>
       <label class="field"><span>Location</span><input class="input" id="jLoc" value="${esc(j.location)}" placeholder="Hyderabad, hybrid"></label>
-      <label class="field"><span>Budget (LPA)</span><input class="input" id="jBudget" type="number" step="0.5" min="0" value="${esc(j.budgetLPA)}"></label>
+      <label class="field"><span>Budget (LPA)</span><input class="input" id="jBudget" type="number" step="0.5" min="0" value="${esc(j.budgetLPA || '')}"></label>
     </div>
     <div class="form-grid three">
-      <label class="field"><span>Min experience</span><input class="input" id="jMin" type="number" min="0" value="${esc(j.minExp)}"></label>
-      <label class="field"><span>Max experience</span><input class="input" id="jMax" type="number" min="0" value="${esc(j.maxExp)}"></label>
+      <label class="field"><span>Min experience</span><input class="input" id="jMin" type="number" min="0" step="0.5" value="${esc(j.minExp)}"></label>
+      <label class="field"><span>Max experience</span><input class="input" id="jMax" type="number" min="0" step="0.5" value="${esc(j.maxExp)}"></label>
       <label class="field"><span>Openings</span><input class="input" id="jOpen" type="number" min="1" value="${esc(j.openings)}"></label>
     </div>
     <label class="field"><span>Required skills</span><input class="input" id="jSkills" value="${esc(j.skills.join(', '))}" placeholder="React, Node.js, AWS, PostgreSQL"><small class="help">Separate with commas. CVs are scored against these.</small></label>
     <label class="field"><span>Job description <i class="opt">optional</i></span><textarea class="input" id="jJd" rows="4" placeholder="Paste the client’s JD. AI scoring uses it for context.">${esc(j.jdText)}</textarea></label>
-    <div class="field"><span>Recruiters on this mandate</span>${recruiters.length ? `<div class="check-list">${recruiters.map(u => `<label class="check"><input type="checkbox" class="jRec" value="${esc(u.id)}"${j.assignedRecruiterIds.includes(u.id) ? ' checked' : ''}><div><b>${esc(u.name)}</b><small>${u.active ? esc(u.email || 'Recruiter') : 'Disabled'}</small></div></label>`).join('')}</div>` : `<small class="help">No recruiters yet. Add them from Team. Admins can see every mandate.</small>`}</div>
+    <div class="field"><span>Recruiters on this mandate</span>${recruiters.length ? `<div class="check-list">${recruiters.map(u => `<label class="check"><input type="checkbox" class="jRec" value="${esc(u.id)}"${j.assignedRecruiterIds.includes(u.id) ? ' checked' : ''}><div><b>${esc(u.name)}</b><small>${u.active ? esc(u.email || 'Recruiter') : 'Not active'}</small></div></label>`).join('')}</div>` : `<small class="help">No recruiters yet. Team members create an account from the sign-in page, then you switch them on in Team. Admins can see every mandate.</small>`}</div>
     <p class="form-error" id="jError" role="alert"></p>`;
   const w = openModal({ title: id ? 'Edit mandate' : 'New mandate', size:'md', body,
     footer:`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" id="jSave">${id ? 'Save mandate' : 'Create mandate'}</button>` });
-  $('#jSave', w).onclick = () => {
-    const err = m => { $('#jError', w).textContent = m; };
-    const title = $('#jTitle', w).value.trim(); if (!title) return err('Enter a job title.');
+  $('#jSave', w).onclick = () => busy($('#jSave', w), 'Saving…', async () => {
+    const title = $('#jTitle', w).value.trim(); if (!title) throw new Error('Enter a job title.');
     const minExp = num($('#jMin', w).value), maxExp = num($('#jMax', w).value) || Math.max(minExp, 30);
-    if (minExp > maxExp) return err('Minimum experience can’t be more than the maximum.');
-    const data = { clientId: $('#jClient', w).value, status: $('#jStatus', w).value, title, location: $('#jLoc', w).value.trim(), budgetLPA: num($('#jBudget', w).value),
-      minExp, maxExp, openings: Math.max(1, Math.round(num($('#jOpen', w).value)) || 1), skills: $('#jSkills', w).value.split(',').map(s => s.trim()).filter(Boolean),
-      jdText: $('#jJd', w).value.trim(), assignedRecruiterIds: $$('.jRec:checked', w).map(x => x.value) };
-    if (id) { Object.assign(j, data); logActivity(`${firstName(me.name)} updated the mandate ${title}`, id); }
-    else { const nj = { id: uid('job'), createdAt: nowISO(), ...data }; S.jobs.push(nj); activeJobId = nj.id; logActivity(`${firstName(me.name)} created the mandate ${title}`, nj.id); }
-    save(); closeModal(); render(); toast(id ? 'Mandate saved.' : `${title} created.`, 'success');
-  };
+    if (minExp > maxExp) throw new Error('Minimum experience can’t be more than the maximum.');
+    const row = { client_id: $('#jClient', w).value, status: $('#jStatus', w).value, title, location: $('#jLoc', w).value.trim() || null,
+      budget_lpa: num($('#jBudget', w).value) || null, min_exp_years: minExp, max_exp_years: maxExp,
+      openings: Math.max(1, Math.round(num($('#jOpen', w).value)) || 1), required_skills: $('#jSkills', w).value.split(',').map(s => s.trim()).filter(Boolean),
+      jd_content: $('#jJd', w).value.trim() || null };
+    const recs = $$('.jRec:checked', w).map(x => x.value);
+    let jobId = id;
+    if (id) await db(sb.from('jobs').update(row).eq('id', id), 'save the mandate');
+    else { const ins = await db(sb.from('jobs').insert({ ...row, created_by: me.id }).select('id').single(), 'create the mandate'); jobId = ins.id; activeJobId = jobId; }
+    await setJobRecruiters(jobId, recs);
+    logActivity(`${firstName(me.name)} ${id ? 'updated' : 'created'} the mandate ${title}`, jobId);
+    w._busy = false; closeModal(); await refreshNow(); toast(id ? 'Mandate saved.' : `${title} created.`, 'success');
+  }, $('#jError', w));
 }
 
 /* =================== clients =================== */
@@ -1432,13 +1569,13 @@ ACTIONS['del-client'] = async id => {
   const jobIds = S.jobs.filter(j => j.clientId === id).map(j => j.id);
   const cands = S.candidates.filter(c => jobIds.includes(c.jobId));
   if (!(await confirmDialog(`Delete ${cl.name}${jobIds.length ? `, its ${jobIds.length} mandate${jobIds.length > 1 ? 's' : ''} and ${cands.length} candidate${cands.length === 1 ? '' : 's'}` : ''}? This can’t be undone.`))) return;
-  cands.forEach(c => CVDB.del(c.id));
-  S.clients = S.clients.filter(c => c.id !== id); S.jobs = S.jobs.filter(j => j.clientId !== id); S.candidates = S.candidates.filter(c => !jobIds.includes(c.jobId));
+  try { await removeCvFiles(cands); await db(sb.from('clients').delete().eq('id', id), 'delete the client'); }
+  catch (e) { toast(e.message, 'error'); return; }
   logActivity(`${firstName(me.name)} deleted the client ${cl.name}`);
-  save(); render(); toast('Client deleted.');
+  await refreshNow(); toast('Client deleted.');
 };
 function renderClients(){
-  const rows = S.clients.map(cl => {
+  const rows = S.clients.filter(c => c.full).map(cl => {
     const jobs = S.jobs.filter(j => j.clientId === cl.id);
     const placed = S.candidates.filter(c => jobs.some(j => j.id === c.jobId) && stageType(c.stage) === 'joined');
     return { cl, open: jobs.filter(j => j.status === 'open').length, total: jobs.length, placed: placed.length, fees: placed.reduce((s, c) => s + feeFor(c).amount, 0) };
@@ -1452,7 +1589,7 @@ function renderClients(){
         <td class="num">${r.open} open<span class="cell-sub">${r.total} total</span></td><td class="num">${r.placed}</td><td class="num"><b>${inr(r.fees)}</b></td>
         ${isAdmin() ? `<td class="actions"><button class="icon-btn sm" data-act="edit-client" data-id="${esc(r.cl.id)}" aria-label="Edit ${esc(r.cl.name)}" title="Edit">${icon('edit',15)}</button><button class="icon-btn sm" data-act="del-client" data-id="${esc(r.cl.id)}" aria-label="Delete ${esc(r.cl.name)}" title="Delete">${icon('trash',15)}</button></td>` : ''}
       </tr>`).join('')}</tbody></table></div>`
-      : emptyState('No clients yet', 'Add the companies you recruit for, with their fee and guarantee terms.', isAdmin() ? `<button class="btn btn-primary" data-act="new-client">${icon('plus')}Add client</button>` : ''));
+      : emptyBlock('No clients yet', 'Add the companies you recruit for, with their fee and guarantee terms.', isAdmin() ? `<button class="btn btn-primary" data-act="new-client">${icon('plus')}Add client</button>` : ''));
 }
 function openClientForm(id){
   if (!isAdmin()) return;
@@ -1466,39 +1603,44 @@ function openClientForm(id){
       <label class="field span-2"><span>Contact phone <i class="opt">optional</i></span><input class="input" id="cPhone" type="tel" value="${esc(cl.spocPhone || '')}"></label>
     </div>
     <div class="form-grid three">
-      <label class="field"><span>Fee (% of CTC)</span><input class="input" id="cFee" type="number" step="0.01" min="0" value="${esc(cl.feePercent)}"></label>
+      <label class="field"><span>Fee (% of CTC)</span><input class="input" id="cFee" type="number" step="0.01" min="0" max="100" value="${esc(cl.feePercent)}"></label>
       <label class="field"><span>Guarantee (days)</span><input class="input" id="cGuar" type="number" min="0" value="${esc(cl.guaranteeDays)}"></label>
       <label class="field"><span>Payment terms (days)</span><input class="input" id="cCred" type="number" min="0" value="${esc(cl.creditDays)}"></label>
     </div>
+    ${id ? `<p class="help" style="margin:0">Changing terms only affects future placements. Placements already made keep the terms they had.</p>` : ''}
     <p class="form-error" id="cError" role="alert"></p>`;
   const w = openModal({ title: id ? 'Edit client' : 'Add client', size:'md', body,
     footer:`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" id="cSave">${id ? 'Save client' : 'Add client'}</button>` });
-  $('#cSave', w).onclick = () => {
+  $('#cSave', w).onclick = () => busy($('#cSave', w), 'Saving…', async () => {
     const name = $('#cName', w).value.trim(), email = $('#cEmail', w).value.trim();
-    if (!name) { $('#cError', w).textContent = 'Enter the company name.'; return; }
-    if (email && !EMAIL_FULL.test(email)) { $('#cError', w).textContent = 'That email doesn’t look right.'; return; }
-    const data = { name, industry: $('#cInd', w).value.trim(), spocName: $('#cSpoc', w).value.trim(), spocEmail: email, spocPhone: $('#cPhone', w).value.trim(),
-      feePercent: num($('#cFee', w).value), guaranteeDays: Math.round(num($('#cGuar', w).value)), creditDays: Math.round(num($('#cCred', w).value)) };
-    if (id) Object.assign(cl, data); else S.clients.push({ id: uid('cli'), ...data });
+    if (!name) throw new Error('Enter the company name.');
+    if (email && !EMAIL_FULL.test(email)) throw new Error('That email doesn’t look right.');
+    const fee = num($('#cFee', w).value); if (fee > 100) throw new Error('The fee can’t be more than 100%.');
+    const row = { company_name: name, industry: $('#cInd', w).value.trim() || null, spoc_name: $('#cSpoc', w).value.trim() || null, spoc_email: email || null,
+      spoc_phone: $('#cPhone', w).value.trim() || null, commission_percentage: fee, replacement_guarantee_days: Math.round(num($('#cGuar', w).value)),
+      payment_terms_days: Math.round(num($('#cCred', w).value)) };
+    if (id) await db(sb.from('clients').update(row).eq('id', id), 'save the client');
+    else await db(sb.from('clients').insert(row), 'add the client');
     logActivity(`${firstName(me.name)} ${id ? 'updated' : 'added'} the client ${name}`);
-    save(); closeModal(); render(); toast(id ? 'Client saved.' : `${name} added.`, 'success');
-  };
+    w._busy = false; closeModal(); await refreshNow(); toast(id ? 'Client saved.' : `${name} added.`, 'success');
+  }, $('#cError', w));
 }
 
 /* =================== placements =================== */
 function renderPlacements(){
   const t0 = startOfToday();
   const rows = accessibleCandidates().filter(c => stageType(c.stage) === 'joined').map(c => {
-    const f = feeFor(c);
-    return { c, f, due: c.joiningDate ? addDaysDate(c.joiningDate, f.client ? f.client.creditDays : 0) : null, gEnd: c.joiningDate ? addDaysDate(c.joiningDate, f.client ? f.client.guaranteeDays : 0) : null };
+    const f = feeFor(c), p = c.placement;
+    return { c, f, p, due: p && p.payment_due_date ? new Date(p.payment_due_date) : null, gEnd: p && p.guarantee_end_date ? new Date(p.guarantee_end_date) : null };
   }).sort((a, b) => new Date(b.c.joiningDate || b.c.updatedAt) - new Date(a.c.joiningDate || a.c.updatedAt));
   const sum = fn => rows.filter(fn).reduce((s, r) => s + r.f.amount, 0);
   const overdue = rows.filter(r => r.c.invoiceStatus === 'raised' && r.due && r.due < t0);
   const inGuarantee = rows.filter(r => r.gEnd && r.gEnd >= t0);
+  const notRaised = rows.filter(r => r.c.invoiceStatus === 'pending').length;
   const kpis = [
     ['Total fees', inr(sum(() => true)), `${rows.length} placement${rows.length === 1 ? '' : 's'}`],
     ['Collected', inr(sum(r => r.c.invoiceStatus === 'paid')), `${rows.filter(r => r.c.invoiceStatus === 'paid').length} paid`],
-    ['To collect', inr(sum(r => r.c.invoiceStatus !== 'paid')), `${rows.filter(r => r.c.invoiceStatus === 'pending').length} invoice${rows.filter(r => r.c.invoiceStatus === 'pending').length === 1 ? '' : 's'} not raised`],
+    ['To collect', inr(sum(r => r.c.invoiceStatus !== 'paid')), `${notRaised} invoice${notRaised === 1 ? '' : 's'} not raised`],
     ['Overdue', inr(overdue.reduce((s, r) => s + r.f.amount, 0)), `${overdue.length} past payment terms`],
     ['In guarantee', inGuarantee.length, 'Could still need a replacement']
   ];
@@ -1509,185 +1651,165 @@ function renderPlacements(){
         const c = r.c, late = c.invoiceStatus === 'raised' && r.due && r.due < t0;
         const g = !r.gEnd ? '<span class="muted">Needs joining date</span>' : r.gEnd >= t0 ? `<span class="badge b-warn">Until ${fmtShort(r.gEnd)}</span>` : '<span class="badge b-good">Completed</span>';
         return `<tr>
-          <td><button class="btn-text" style="padding:0;font-weight:600;color:var(--ink);cursor:pointer;background:none;border:0" data-act="open-cand" data-id="${esc(c.id)}">${esc(c.name)}</button></td>
+          <td><button style="padding:0;font-weight:600;color:var(--ink);cursor:pointer;background:none;border:0;text-align:left" data-act="open-cand" data-id="${esc(c.id)}">${esc(c.name)}</button></td>
           <td>${esc(r.f.client ? r.f.client.name : 'No client')}<span class="cell-sub">${esc(r.f.job ? r.f.job.title : '')}</span></td>
           <td>${c.joiningDate ? fmtDate(c.joiningDate) : `<button class="btn btn-ghost btn-sm" data-act="open-cand" data-id="${esc(c.id)}">Add date</button>`}</td>
-          <td class="num">${lpa(r.f.ctc)}${!c.offeredCTC && c.expectedCTC ? '<span class="cell-sub">Using expected</span>' : ''}</td>
+          <td class="num">${lpa(r.f.ctc)}${r.p && r.p.using_expected_ctc ? '<span class="cell-sub">Using expected</span>' : ''}</td>
           <td class="num"><b>${inr(r.f.amount)}</b><span class="cell-sub">${r.f.pct}%</span></td>
           <td>${r.due ? `${fmtDate(r.due)}${late ? ' <span class="badge b-bad">Overdue</span>' : ''}` : '—'}</td>
           <td>${g}</td>
-          <td>${isAdmin() ? `<label class="sr-only" for="inv-${esc(c.id)}">Invoice status</label><select class="select select-inline" id="inv-${esc(c.id)}" data-inv="${esc(c.id)}">${Object.entries(INVOICE).map(([k, l]) => `<option value="${k}"${k === c.invoiceStatus ? ' selected' : ''}>${l}</option>`).join('')}</select>` : `<span class="badge ${c.invoiceStatus === 'paid' ? 'b-good' : c.invoiceStatus === 'raised' ? 'b-brand' : 'b-muted'}">${INVOICE[c.invoiceStatus]}</span>`}</td>
+          <td>${isAdmin() && r.p ? `<label class="sr-only" for="inv-${esc(c.id)}">Invoice status</label><select class="select select-inline" id="inv-${esc(c.id)}" data-inv="${esc(c.id)}">${Object.entries(INVOICE).map(([k, l]) => `<option value="${k}"${k === c.invoiceStatus ? ' selected' : ''}>${l}</option>`).join('')}</select>` : `<span class="badge ${c.invoiceStatus === 'paid' ? 'b-good' : c.invoiceStatus === 'raised' ? 'b-brand' : 'b-muted'}">${INVOICE[c.invoiceStatus]}</span>`}</td>
         </tr>`; }).join('')}</tbody></table></div>`
-      : emptyState('No placements yet', 'When you move a candidate to a “Joined” stage, they show up here with their fee, payment date and guarantee period.'));
-  $$('[data-inv]').forEach(s => s.onchange = () => {
-    const c = candById(s.dataset.inv); c.invoiceStatus = s.value; c.updatedAt = nowISO();
-    logActivity(`${firstName(me.name)} marked ${c.name}’s invoice as ${INVOICE[s.value].toLowerCase()}`, c.jobId);
-    save(); render(); toast(`Invoice marked as ${INVOICE[s.value].toLowerCase()}.`, 'success');
+      : emptyBlock('No placements yet', 'When you move a candidate to a “Joined” stage, they show up here with their fee, payment date and guarantee period.'));
+  $$('[data-inv]').forEach(s => s.onchange = async () => {
+    const c = candById(s.dataset.inv), v = s.value;
+    const patch = { invoice_status: v };
+    if (v === 'raised' && !(c.placement && c.placement.invoiced_on)) patch.invoiced_on = todayISO();
+    if (v === 'paid') { patch.paid_on = todayISO(); if (!(c.placement && c.placement.invoiced_on)) patch.invoiced_on = todayISO(); }
+    if (v === 'pending') { patch.invoiced_on = null; patch.paid_on = null; }
+    s.disabled = true;
+    try { await db(sb.from('placements').update(patch).eq('candidate_id', c.id), 'update the invoice'); }
+    catch (e) { toast(e.message, 'error'); s.value = c.invoiceStatus; s.disabled = false; return; }
+    logActivity(`${firstName(me.name)} marked ${c.name}’s invoice as ${INVOICE[v].toLowerCase()}`, c.jobId);
+    await refreshNow(); toast(`Invoice marked as ${INVOICE[v].toLowerCase()}.`, 'success');
   });
 }
 
 /* =================== team =================== */
-ACTIONS['new-user'] = () => openUserForm(null);
 ACTIONS['edit-user'] = id => openUserForm(id);
-ACTIONS['del-user'] = async id => {
-  const u = userById(id); if (!u || u.id === me.id) return;
-  if (u.role === 'admin' && !S.users.some(x => x.id !== id && x.role === 'admin' && x.active)) { toast('Hiro needs at least one admin.', 'error'); return; }
-  if (!(await confirmDialog(`Remove ${u.name}? They won’t be able to sign in. Candidates they added stay in the pipeline.`, { ok:'Remove' }))) return;
-  S.users = S.users.filter(x => x.id !== id);
-  S.jobs.forEach(j => { j.assignedRecruiterIds = j.assignedRecruiterIds.filter(x => x !== id); });
-  logActivity(`${firstName(me.name)} removed ${u.name} from the team`);
-  save(); render(); toast(`${u.name} removed.`);
+ACTIONS['invite'] = () => {
+  const link = appUrl();
+  const w = openModal({ title:'Add a team member', size:'sm',
+    body:`<ol class="steps"><li>Send them this link: <span class="code">${esc(link)}</span></li><li>They choose <b>Create an account</b> and sign up with their email.</li><li>They’ll appear here as <b>Not active</b>. Edit them to switch them on, pick their mandates and set permissions.</li></ol>`,
+    footer:`<button class="btn btn-ghost" data-close>Close</button><button class="btn btn-primary" id="copyLink">${icon('copy',16)}Copy link</button>` });
+  $('#copyLink', w).onclick = async () => { if (await copyText(link)) toast('Link copied.', 'success'); };
 };
 function renderTeam(){
   const tag = (on, label) => `<span class="badge ${on ? 'b-good' : 'b-muted'}">${on ? icon('check',11) : icon('lock',11)} ${label}</span>`;
-  $('#view').innerHTML = pageHead('Team', 'Who can sign in, which mandates they see, and what they’re allowed to do.', `<button class="btn btn-primary" data-act="new-user">${icon('plus')}Add team member</button>`)
+  const users = [...S.users].sort((a, b) => (a.active === b.active ? a.name.localeCompare(b.name) : a.active ? 1 : -1));
+  const waiting = users.filter(u => !u.active).length;
+  $('#view').innerHTML = pageHead('Team', 'Who can sign in, which mandates they see, and what they’re allowed to do.', `<button class="btn btn-primary" data-act="invite">${icon('plus')}Add team member</button>`)
+    + (waiting ? `<div class="alert warn" style="margin-bottom:16px">${icon('info',16)}<span>${waiting} account${waiting > 1 ? 's are' : ' is'} not active. People who just signed up show here; edit them to switch them on.</span></div>` : '')
     + `<div class="table-wrap"><table class="table"><thead><tr><th>Member</th><th>Role</th><th>Mandates</th><th>Permissions</th><th>Status</th><th></th></tr></thead><tbody>
-      ${S.users.map(u => {
-        const jobs = u.role === 'admin' ? null : S.jobs.filter(j => j.assignedRecruiterIds.includes(u.id));
+      ${users.map(u => {
         const admin = u.role === 'admin';
+        const jobs = admin ? [] : S.jobs.filter(j => j.assignedRecruiterIds.includes(u.id));
         return `<tr>
           <td><div class="who"><span class="avatar">${esc(initials(u.name))}</span><div><b>${esc(u.name)}${u.id === me.id ? ' <span class="muted">(you)</span>' : ''}</b><span class="cell-sub">${esc(u.email || '')}</span></div></div></td>
           <td><span class="badge ${admin ? 'b-brand' : 'b-muted'}">${admin ? 'Admin' : 'Recruiter'}</span></td>
           <td>${admin ? '<span class="muted">All mandates</span>' : jobs.length ? esc(jobs.map(j => j.title).join(', ')) : '<span class="muted">None assigned</span>'}</td>
           <td><div class="perm">${tag(admin || u.canDownloadCV, 'Contacts and CVs')}${tag(admin || u.canExportCSV, 'Export')}${tag(admin || u.canViewCommercials, 'Fees')}</div></td>
-          <td><span class="badge ${u.active ? 'b-good' : 'b-muted'}">${u.active ? 'Active' : 'Disabled'}</span></td>
-          <td class="actions"><button class="icon-btn sm" data-act="edit-user" data-id="${esc(u.id)}" aria-label="Edit ${esc(u.name)}" title="Edit">${icon('edit',15)}</button>${u.id !== me.id ? `<button class="icon-btn sm" data-act="del-user" data-id="${esc(u.id)}" aria-label="Remove ${esc(u.name)}" title="Remove">${icon('trash',15)}</button>` : ''}</td>
+          <td><span class="badge ${u.active ? 'b-good' : 'b-warn'}">${u.active ? 'Active' : 'Not active'}</span></td>
+          <td class="actions">${u.active ? `<button class="icon-btn sm" data-act="edit-user" data-id="${esc(u.id)}" aria-label="Edit ${esc(u.name)}" title="Edit">${icon('edit',15)}</button>` : `<button class="btn btn-primary btn-sm" data-act="edit-user" data-id="${esc(u.id)}">Switch on</button>`}</td>
         </tr>`; }).join('')}</tbody></table></div>`;
 }
 function openUserForm(id){
   if (!isAdmin()) return;
-  const editing = id ? userById(id) : null;
-  const u = editing || { id: uid('user'), name:'', email:'', role:'recruiter', canDownloadCV:false, canExportCSV:false, canViewCommercials:false, active:true };
-  const self = editing && editing.id === me.id;
-  const perm = (k, title, sub) => `<label class="check"><input type="checkbox" class="uPerm" id="${k}"${u[k] ? ' checked' : ''}><div><b>${title}</b><small>${sub}</small></div></label>`;
+  const u = userById(id); if (!u) return;
+  const self = u.id === me.id;
+  const perm = (k, title, sub) => `<label class="check"><input type="checkbox" id="${k}"${u[k] ? ' checked' : ''}><div><b>${title}</b><small>${sub}</small></div></label>`;
   const body = `
     <div class="form-grid">
       <label class="field"><span>Full name</span><input class="input" id="uName" value="${esc(u.name)}"></label>
-      <label class="field"><span>Email <i class="opt">optional</i></span><input class="input" id="uEmail" type="email" value="${esc(u.email)}"></label>
-      <label class="field"><span>Role</span><select class="select" id="uRole"><option value="recruiter"${u.role === 'recruiter' ? ' selected' : ''}>Recruiter</option><option value="admin"${u.role === 'admin' ? ' selected' : ''}>Admin</option></select></label>
-      <label class="field"><span>${editing ? 'New PIN' : 'PIN'}</span><input class="input pin" id="uPin" inputmode="numeric" maxlength="6" placeholder="${editing ? 'Keep current' : '4 to 6 digits'}" autocomplete="new-password"></label>
+      <label class="field"><span>Email</span><input class="input" value="${esc(u.email)}" disabled></label>
+      <label class="field span-2"><span>Role</span><select class="select" id="uRole"><option value="recruiter"${u.role === 'recruiter' ? ' selected' : ''}>Recruiter</option><option value="admin"${u.role === 'admin' ? ' selected' : ''}>Admin</option></select></label>
     </div>
+    ${!self ? `<label class="check"><input type="checkbox" id="uActive"checked><div><b>Can sign in</b><small>Turn off to block access without deleting the account.</small></div></label>` : ''}
     <div class="field" id="uPerms"><span>Permissions</span><div class="check-list" style="max-height:none">
-      ${perm('canDownloadCV', 'See contact details and download CVs', 'Without this, phone numbers and emails are masked.')}
+      ${perm('canDownloadCV', 'See contact details and download CVs', 'Without this, phone numbers and emails are hidden.')}
       ${perm('canExportCSV', 'Export candidates to CSV', 'Downloads the pipeline as a spreadsheet.')}
       ${perm('canViewCommercials', 'See clients, fees and placements', 'Shows the Clients and Placements pages.')}
     </div></div>
     <div class="field" id="uJobsField"><span>Mandates</span>${S.jobs.length ? `<div class="check-list">${S.jobs.map(j => `<label class="check"><input type="checkbox" class="uJob" value="${esc(j.id)}"${j.assignedRecruiterIds.includes(u.id) ? ' checked' : ''}><div><b>${esc(j.title)}</b><small>${esc((clientById(j.clientId) || {}).name || '')}</small></div></label>`).join('')}</div>` : '<small class="help">No mandates yet.</small>'}</div>
-    <p class="help" id="uAdminNote">Admins can see and change everything, so permissions and mandates don’t apply.</p>
-    ${!self ? `<label class="check"><input type="checkbox" id="uActive"${u.active ? ' checked' : ''}><div><b>Can sign in</b><small>Turn off to block access without deleting the account.</small></div></label>` : ''}
+    <p class="help" id="uAdminNote" style="margin:0">Admins can see and change everything, so permissions and mandates don’t apply.</p>
     <p class="form-error" id="uError" role="alert"></p>`;
-  const w = openModal({ title: editing ? `Edit ${u.name}` : 'Add team member', size:'md', body,
-    footer:`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" id="uSave">${editing ? 'Save changes' : 'Add member'}</button>` });
+  const w = openModal({ title: u.active ? `Edit ${u.name}` : `Switch on ${u.name}`, subtitle: u.active ? '' : esc('Signed up and waiting for access.'), size:'md', body,
+    footer:`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" id="uSave">${u.active ? 'Save changes' : 'Switch on'}</button>` });
   const syncRole = () => { const admin = $('#uRole', w).value === 'admin'; $('#uPerms', w).hidden = admin; $('#uJobsField', w).hidden = admin; $('#uAdminNote', w).hidden = !admin; };
   $('#uRole', w).onchange = syncRole; syncRole();
-  $('#uSave', w).onclick = async () => {
-    const err = m => { $('#uError', w).textContent = m; };
-    const name = $('#uName', w).value.trim(), email = $('#uEmail', w).value.trim(), role = $('#uRole', w).value, pin = $('#uPin', w).value.trim();
+  $('#uSave', w).onclick = () => busy($('#uSave', w), 'Saving…', async () => {
+    const name = $('#uName', w).value.trim(), role = $('#uRole', w).value;
     const active = $('#uActive', w) ? $('#uActive', w).checked : true;
-    if (!name) return err('Enter a name.');
-    if (email && !EMAIL_FULL.test(email)) return err('That email doesn’t look right.');
-    if (!editing && !pin) return err('Set a PIN they’ll use to sign in.');
-    if (pin && !/^\d{4,6}$/.test(pin)) return err('The PIN must be 4 to 6 digits.');
-    if (editing && editing.role === 'admin' && (role !== 'admin' || !active) && !S.users.some(x => x.id !== u.id && x.role === 'admin' && x.active)) return err('Hiro needs at least one active admin. Make someone else an admin first.');
-    Object.assign(u, { name, email, role, active, canDownloadCV: $('#canDownloadCV', w).checked, canExportCSV: $('#canExportCSV', w).checked, canViewCommercials: $('#canViewCommercials', w).checked });
-    if (pin) { u.pinHash = await hashPin(u.id, pin); if (role === 'admin') S.meta.pinChanged = true; }
-    const checked = role === 'admin' ? [] : $$('.uJob:checked', w).map(x => x.value);
-    S.jobs.forEach(j => { const has = j.assignedRecruiterIds.includes(u.id), want = checked.includes(j.id); if (want && !has) j.assignedRecruiterIds.push(u.id); if (!want && has) j.assignedRecruiterIds = j.assignedRecruiterIds.filter(x => x !== u.id); });
-    if (!editing) S.users.push(u);
-    logActivity(`${firstName(me.name)} ${editing ? 'updated' : 'added'} ${name}${pin && editing ? ' and reset their PIN' : ''}`);
-    save(); closeModal();
-    if (self) { $('#meName').textContent = u.name; $('#meAvatar').textContent = initials(u.name); $('#meRole').textContent = u.role === 'admin' ? 'Admin' : 'Recruiter'; }
-    go(view); toast(editing ? 'Changes saved.' : `${name} can now sign in.`, 'success');
-  };
+    if (!name) throw new Error('Enter a name.');
+    await db(sb.from('agency_users').update({ full_name: name, role, is_active: active,
+      can_download_cv: $('#canDownloadCV', w).checked, can_export_csv: $('#canExportCSV', w).checked, can_view_commercials: $('#canViewCommercials', w).checked }).eq('id', u.id), 'save this team member');
+    const wanted = role === 'admin' ? [] : $$('.uJob:checked', w).map(x => x.value);
+    const current = S.jobs.filter(j => j.assignedRecruiterIds.includes(u.id)).map(j => j.id);
+    const toAdd = wanted.filter(x => !current.includes(x)), toRemove = current.filter(x => !wanted.includes(x));
+    if (toRemove.length) await db(sb.from('job_recruiters').delete().eq('user_id', u.id).in('job_id', toRemove), 'update mandates');
+    if (toAdd.length) await db(sb.from('job_recruiters').insert(toAdd.map(j => ({ job_id: j, user_id: u.id }))), 'update mandates');
+    logActivity(`${firstName(me.name)} ${u.active ? 'updated' : 'switched on'} ${name}`);
+    w._busy = false; closeModal(); await refreshNow();
+    if (self) { $('#meName').textContent = me.name; $('#meAvatar').textContent = initials(me.name); $('#meRole').textContent = me.role === 'admin' ? 'Admin' : 'Recruiter'; go(view); }
+    toast(u.active ? 'Changes saved.' : `${name} can now sign in.`, 'success');
+  }, $('#uError', w));
 }
 
 /* =================== settings =================== */
 function renderSettings(){
-  const a = S.aiConfig;
+  const st = { ok:['b-good','Working'], missing:['b-warn','Not set up'], unknown:['b-muted','Not checked'] }[aiState] || ['b-muted','Not checked'];
   $('#view').innerHTML = pageHead('Settings', 'AI scoring and your data.') + `<div class="settings-grid">
     <section class="panel">
-      <div class="panel-head"><div><h2>AI CV scoring</h2><p class="page-sub">With a key, each uploaded CV is read by AI for name, contact details, salary, notice period and fit. Without one, Hiro matches skills and experience.</p></div><span class="badge ${a.apiKey ? 'b-good' : 'b-muted'}">${a.apiKey ? 'On' : 'Off'}</span></div>
+      <div class="panel-head"><div><h2>AI CV scoring</h2><p class="page-sub">AI reads each uploaded CV for name, contact details, salary, notice period and fit. It runs inside your Supabase project, so the AI key never reaches anyone’s browser. Without it, Hiro scores on skills and experience.</p></div><span class="badge ${st[0]}">${st[1]}</span></div>
       <div class="panel-body">
-        <div class="form-grid">
-          <label class="field"><span>Provider</span><select class="select" id="aiProvider">${Object.entries(AI_NAMES).map(([k, l]) => `<option value="${k}"${k === a.provider ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
-          <label class="field"><span>Model</span><input class="input" id="aiModel" value="${esc(a.model)}" spellcheck="false"></label>
-          <label class="field span-2"><span>Endpoint</span><input class="input" id="aiEndpoint" value="${esc(a.endpoint)}" spellcheck="false"></label>
-          <label class="field span-2"><span>API key</span><div class="with-btn"><input class="input" id="aiKey" type="password" value="${esc(a.apiKey)}" placeholder="Paste your key" spellcheck="false" autocomplete="off"><button class="btn btn-text btn-sm" type="button" data-act="toggle-key">Show</button></div></label>
-        </div>
-        <div class="alert warn" style="margin-top:14px">${icon('alert',16)}<span>The key is saved in this browser and sent straight to the provider from here. Use a key with a monthly spending limit.</span></div>
-        <div class="row-actions"><button class="btn btn-primary" data-act="ai-save">Save</button><button class="btn btn-ghost" data-act="ai-test">Test connection</button><span id="aiResult" class="ai-result" role="status"></span></div>
+        <ol class="steps">
+          <li>In your Supabase project, open <b>Edge Functions</b> and create a function named <span class="code">score-cv</span>. Paste in the code from the <span class="code">score-cv-function.ts</span> file and deploy it.</li>
+          <li>In the Edge Functions secrets, add <span class="code">AI_API_KEY</span> (your Gemini, OpenAI, Groq or DeepSeek key) and <span class="code">AI_PROVIDER</span> (<span class="code">gemini</span>, <span class="code">openai</span>, <span class="code">groq</span> or <span class="code">deepseek</span>). <span class="code">AI_MODEL</span> is optional.</li>
+          <li>Come back here and test it.</li>
+        </ol>
+        <div class="row-actions"><button class="btn btn-primary" data-act="ai-test">Test AI scoring</button><span id="aiResult" class="ai-result" role="status"></span></div>
       </div>
     </section>
     <section class="panel">
-      <div class="panel-head"><div><h2>Data and backups</h2><p class="page-sub">Everything is saved in this browser on this device. Download a backup regularly, and use it to move your data to another computer.</p></div></div>
+      <div class="panel-head"><div><h2>Your data</h2><p class="page-sub">Everything is saved in your Supabase database and shared live with your team. Supabase keeps its own backups; you can also download a copy here.</p></div><span class="badge b-good"><span class="sync-dot" style="margin:0"></span> Connected</span></div>
       <div class="panel-body">
-        <div class="row-actions" style="margin-top:0"><button class="btn btn-ghost" data-act="export-backup">${icon('download',16)}Download backup</button><button class="btn btn-ghost" data-act="import-backup">${icon('upload',16)}Restore from backup</button><span class="spacer" style="flex:1"></span><button class="btn btn-text danger" data-act="reset-data">Reset to demo data</button></div>
-        <p class="help" style="margin:12px 0 0">Backups include clients, mandates, candidates, notes and team members. CV files and the AI key aren’t included.</p>
+        <div class="row-actions" style="margin-top:0"><button class="btn btn-ghost" data-act="export-backup">${icon('download',16)}Download a copy</button></div>
+        <p class="help" style="margin:12px 0 0">The copy includes clients, mandates, candidates and contact details as a JSON file. CV files stay in Supabase storage.</p>
       </div>
     </section></div>`;
-  $('#aiProvider').onchange = e => { const p = AI_PRESETS[e.target.value]; $('#aiModel').value = p.model; $('#aiEndpoint').value = p.endpoint; };
 }
-const readAiForm = () => ({ provider: $('#aiProvider').value, model: $('#aiModel').value.trim(), endpoint: $('#aiEndpoint').value.trim(), apiKey: $('#aiKey').value.trim() });
-ACTIONS['toggle-key'] = (id, el) => { const k = $('#aiKey'); k.type = k.type === 'password' ? 'text' : 'password'; el.textContent = k.type === 'password' ? 'Show' : 'Hide'; };
-ACTIONS['ai-save'] = () => { const cfg = readAiForm(); if (cfg.apiKey && !cfg.model) { toast('Enter a model name.', 'error'); return; } S.aiConfig = cfg; save(); render(); toast(cfg.apiKey ? 'AI settings saved.' : 'AI scoring turned off.', 'success'); };
-ACTIONS['ai-test'] = async () => {
-  const cfg = readAiForm(), out = $('#aiResult');
-  if (!cfg.apiKey) { out.className = 'ai-result bad'; out.textContent = 'Paste an API key first.'; return; }
+ACTIONS['ai-test'] = async (id, el) => {
+  const out = $('#aiResult');
   out.className = 'ai-result'; out.textContent = 'Testing…';
-  try { const r = parseJSONLoose(await aiComplete('Reply with only this JSON and nothing else: {"ok": true}', cfg)); if (!r || r.ok !== true) throw new Error('Unexpected reply'); out.className = 'ai-result ok'; out.textContent = `Connected to ${cfg.model}. Remember to save.`; }
-  catch (e) { out.className = 'ai-result bad'; out.textContent = `Didn’t work: ${e.message}`; }
+  await busy(el, 'Testing…', async () => {
+    try {
+      const r = await aiComplete('Reply with only this JSON and nothing else: {"ok": true}');
+      const j = parseJSONLoose(r.text); if (!j || j.ok !== true) throw new Error('Unexpected reply from the AI');
+      out.className = 'ai-result ok'; out.textContent = `Working${r.model ? ` with ${r.model}` : ''}. New CV uploads will use AI scoring.`;
+    } catch (e) { out.className = 'ai-result bad'; out.textContent = `Not working yet: ${e.message}`; }
+  });
+  const badge = $('.panel .badge'); if (badge) { badge.className = 'badge ' + (aiState === 'ok' ? 'b-good' : 'b-warn'); badge.textContent = aiState === 'ok' ? 'Working' : 'Not set up'; }
 };
 ACTIONS['export-backup'] = () => {
-  downloadBlob(new Blob([JSON.stringify({ ...S, aiConfig: { ...S.aiConfig, apiKey:'' } }, null, 2)], { type:'application/json' }), `hiro-backup-${new Date().toISOString().slice(0, 10)}.json`);
-  toast('Backup downloaded.', 'success');
-};
-ACTIONS['import-backup'] = () => {
-  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json';
-  inp.onchange = async () => {
-    const f = inp.files[0]; if (!f) return;
-    let data;
-    try { data = JSON.parse(await f.text()); if (!data || !Array.isArray(data.users) || !Array.isArray(data.jobs)) throw new Error(); }
-    catch (e) { toast('That file isn’t a Hiro backup.', 'error'); return; }
-    if (!(await confirmDialog('Replace everything in this browser with this backup? CV files already stored here are kept.', { ok:'Replace data' }))) return;
-    const key = S.aiConfig.apiKey;
-    S = normalizeState(data); if (!S.aiConfig.apiKey) S.aiConfig.apiKey = key;
-    await secureUsers(); save();
-    const u = me && userById(me.id);
-    if (u && u.active) { me = u; go(view); toast('Backup restored.', 'success'); }
-    else { sessionStorage.removeItem('hiro_session'); showLogin(); toast('Backup restored. Sign in again.', 'success'); }
-  };
-  inp.click();
-};
-ACTIONS['reset-data'] = async () => {
-  if (!(await confirmDialog('Delete every client, mandate, candidate and CV in this browser and load the demo data? Download a backup first if you need it.', { ok:'Reset everything' }))) return;
-  try { await CVDB.clear(); } catch (e) {}
-  S = normalizeState(makeDefaultState()); await secureUsers(); save();
-  sessionStorage.removeItem('hiro_session'); showLogin(); toast('Demo data loaded. The admin PIN is 1234.', 'success');
+  const data = { exportedAt: nowISO(), stages: S.stages, clients: S.clients.filter(c => c.full), jobs: S.jobs, candidates: S.candidates.map(({ placement, ...c }) => c), team: S.users.map(({ id, name, email, role, active }) => ({ id, name, email, role, active })) };
+  downloadBlob(new Blob([JSON.stringify(data, null, 2)], { type:'application/json' }), `hiro-export-${todayISO()}.json`);
+  logActivity(`${firstName(me.name)} downloaded a data export`);
+  toast('Copy downloaded.', 'success');
 };
 
-/* =================== theme & init =================== */
+/* =================== theme & start-up =================== */
 function effectiveTheme(){ return document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }
-function paintThemeBtn(){ $('#themeBtn').innerHTML = icon(effectiveTheme() === 'dark' ? 'sun' : 'moon'); }
-function applyTheme(t){ if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; paintThemeBtn(); }
-
-window.addEventListener('storage', e => {
-  if (e.key !== STORE_KEY) return;
-  S = loadState();
-  if (!me) return;
-  const u = userById(me.id);
-  if (!u || !u.active) { logout(); return; }
-  me = u; renderNav(); if (!modalStack.length) render();
-});
+function applyTheme(t){ if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; $('#themeBtn').innerHTML = icon(effectiveTheme() === 'dark' ? 'sun' : 'moon'); }
 
 (async function init(){
   try { applyTheme(localStorage.getItem('hiro_theme')); } catch (e) { applyTheme(null); }
-  await secureUsers();
-  $('#loginForm').addEventListener('submit', submitLogin);
-  $('#lockBtn').innerHTML = icon('logout');
-  $('#lockBtn').onclick = logout;
-  $('#themeBtn').onclick = () => { const next = effectiveTheme() === 'dark' ? 'light' : 'dark'; localStorage.setItem('hiro_theme', next); applyTheme(next); render(); };
-  const sid = sessionStorage.getItem('hiro_session'), u = sid && userById(sid);
-  if (u && u.active) enterApp(u); else showLogin();
+  $('#lockBtn').innerHTML = icon('logout'); $('#lockBtn').onclick = logout;
+  $('#passBtn').innerHTML = icon('key'); $('#passBtn').onclick = () => openPasswordModal(false);
+  $('#themeBtn').onclick = () => { const next = effectiveTheme() === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('hiro_theme', next); } catch (e) {} applyTheme(next); render(); };
+  if (!sb) { $('#bootText').textContent = 'Couldn’t load the database connection. Check your internet connection and reload the page.'; $('.spinner').remove(); return; }
+  $('#authForm').addEventListener('submit', submitAuth);
+  $('#toggleMode').onclick = () => setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
+  $('#forgotBtn').onclick = () => setAuthMode('reset');
+  $('#pendingOut').onclick = logout;
+  $('#pendingRetry').onclick = async () => { const { data } = await sb.auth.getUser(); if (data && data.user) startSession(data.user); else showAuth(); };
+  let recovering = false;
+  sb.auth.onAuthStateChange(event => {
+    if (event === 'PASSWORD_RECOVERY') { recovering = true; setTimeout(() => openPasswordModal(true), 300); }
+  });
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) await startSession(session.user);
+  else showAuth();
+  if (recovering && !modalStack.length) openPasswordModal(true);
 })();
 </script>
 </body>
