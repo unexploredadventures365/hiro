@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hiro | Agency ATS</title>
+<title>Hiro | Hiring made human</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..900&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231D0A4D'/%3E%3Cpath d='M6 9h3.5v5.5h5V9H18v15h-3.5v-6h-5v6H6z' fill='white'/%3E%3Cpath d='M20.5 5H28l-4.2 8.5h-3.3l2.6-5.3h-2.6z' fill='%23C7FF3D'/%3E%3C/svg%3E">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
@@ -39,8 +40,8 @@
 }
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;font-family:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;color:var(--ink);background:var(--bg)}
-h1,h2,h3,h4{font-family:'Bricolage Grotesque','Instrument Sans',system-ui,sans-serif;margin:0;letter-spacing:-.01em;line-height:1.2}
+body{margin:0;font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;color:var(--ink);background:var(--bg)}
+h1,h2,h3,h4{font-family:'Inter',system-ui,sans-serif;margin:0;letter-spacing:-.01em;line-height:1.2}
 button,input,select,textarea{font:inherit;color:inherit}
 a{color:var(--brand)}
 [hidden]{display:none!important}
@@ -55,7 +56,7 @@ a{color:var(--brand)}
 .login-art p{color:rgba(255,255,255,.78);max-width:34ch;font-size:16px;margin:18px 0 0}
 .art-ring{position:absolute;right:-80px;bottom:-80px;width:360px;height:360px;border-radius:50%;background:conic-gradient(var(--lime) 0 92%,rgba(255,255,255,.14) 0);display:grid;place-items:center}
 .art-ring::before{content:'';position:absolute;inset:30px;border-radius:50%;background:var(--art)}
-.art-ring span{position:relative;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:104px;color:var(--lime);letter-spacing:-.04em;transform:translate(-14px,-14px)}
+.art-ring span{position:relative;font-family:sans-serif;font-weight:800;font-size:104px;color:var(--lime);letter-spacing:-.04em;transform:translate(-14px,-14px)}
 .login-form-wrap{display:grid;place-items:center;padding:40px 24px}
 .login-form{width:100%;max-width:360px;display:grid;gap:16px}
 .login-form h2{font-size:30px;font-weight:700}
@@ -74,9 +75,9 @@ a{color:var(--brand)}
 }
 
 /* ---------- shell ---------- */
-.mark{width:34px;height:34px;border-radius:10px;background:var(--brand);color:var(--lime);display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;flex:none}
+.mark{width:34px;height:34px;border-radius:10px;background:var(--brand);color:var(--lime);display:grid;place-items:center;font-family:sans-serif;font-weight:800;font-size:19px;flex:none}
 .brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px}
-.brand b{font-family:'Bricolage Grotesque',sans-serif;font-size:21px;font-weight:800;letter-spacing:-.02em;display:block;line-height:1.1}
+.brand b{font-family:sans-serif;font-size:21px;font-weight:800;letter-spacing:-.02em;display:block;line-height:1.1}
 .brand small{display:block;color:var(--muted);font-size:12px}
 .login-art .brand{padding:0}.login-art .mark{background:var(--lime);color:var(--art)}
 .app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
@@ -133,7 +134,7 @@ textarea.input{height:auto;padding:10px 12px;resize:vertical;min-height:72px;lin
 .input.file{padding:7px 10px;height:auto}
 .input:focus,.select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
 .select{appearance:none;-webkit-appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239896B0' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
-.select-lg{height:44px;font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:700;border-color:transparent;background-color:transparent;padding-left:0;max-width:100%}
+.select-lg{height:44px;font-family:sans-serif;font-size:19px;font-weight:700;border-color:transparent;background-color:transparent;padding-left:0;max-width:100%}
 .select-lg:hover{border-color:var(--line-strong);background-color:var(--surface);padding-left:12px}
 .select-lg:focus{padding-left:12px;background-color:var(--surface)}
 .field{display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -162,7 +163,7 @@ textarea.input{height:auto;padding:10px 12px;resize:vertical;min-height:72px;lin
 .kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;margin-bottom:22px;overflow:hidden}
 .kpi{background:var(--surface);padding:16px 20px}
 .kpi-label{font-size:12.5px;color:var(--muted);font-weight:500}
-.kpi-value{font-family:'Bricolage Grotesque',sans-serif;font-size:32px;font-weight:700;letter-spacing:-.025em;line-height:1.1;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.kpi-value{font-family:sans-serif;font-size:32px;font-weight:700;letter-spacing:-.025em;line-height:1.1;margin:4px 0 2px;font-variant-numeric:tabular-nums}
 .kpi-foot{font-size:12px;color:var(--faint)}
 .dash{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:18px}
 .stack{display:grid;gap:18px;align-content:start;min-width:0}
@@ -173,7 +174,7 @@ textarea.input{height:auto;padding:10px 12px;resize:vertical;min-height:72px;lin
 button.row{cursor:pointer;border-radius:0}
 button.row:hover .row-main b{color:var(--brand)}
 .date-block{width:48px;text-align:center;border-radius:10px;background:var(--brand-soft);color:var(--brand);padding:5px 0;flex:none}
-.date-block b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:19px;line-height:1.05}
+.date-block b{display:block;font-family:sans-serif;font-size:19px;line-height:1.05}
 .date-block span{font-size:11px;font-weight:600}
 .row-main{flex:1;min-width:0}
 .row-main b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -183,7 +184,7 @@ button.row:hover .row-main b{color:var(--brand)}
 .chart-box{position:relative;height:250px}
 .empty-inline{color:var(--faint);padding:18px 0;text-align:center;font-size:13px}
 .empty{background:var(--surface);border:1.5px dashed var(--line-strong);border-radius:16px;padding:52px 24px;text-align:center;display:grid;gap:12px;justify-items:center;color:var(--muted)}
-.empty b{color:var(--ink);font-size:17px;font-family:'Bricolage Grotesque',sans-serif}
+.empty b{color:var(--ink);font-size:17px;font-family:sans-serif}
 .empty p{margin:0;max-width:44ch}
 
 /* ---------- tables ---------- */
@@ -248,13 +249,13 @@ button.row:hover .row-main b{color:var(--brand)}
 .cand.dragging{opacity:.4}
 .cand-top{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
 .cand-id{min-width:0}
-.cand h4{font-family:'Instrument Sans',sans-serif;font-size:14px;font-weight:700;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cand h4{font-family:'Inter',sans-serif;font-size:14px;font-weight:700;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cand-id p{margin:2px 0 0;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cand .chips{margin-top:10px}
 .cand-meta{display:flex;gap:4px 12px;margin-top:10px;font-size:12px;color:var(--muted);flex-wrap:wrap}
 .ring{--size:40px;width:var(--size);height:var(--size);border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--rc) calc(var(--p)*1%),var(--line) 0);position:relative}
 .ring::before{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--surface)}
-.ring span{position:relative;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+.ring span{position:relative;font-family:sans-serif;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
 .ring.lg{--size:84px}.ring.lg::before{inset:8px}.ring.lg span{font-size:26px}
 
 /* ---------- mandates ---------- */
@@ -297,9 +298,9 @@ body.modal-open{overflow:hidden}
 .facts{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .fact{background:var(--surface-2);padding:10px 12px}
 .fact span{display:block;font-size:12px;color:var(--muted)}
-.fact b{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:700}
+.fact b{font-family:sans-serif;font-size:17px;font-weight:700}
 @media (max-width:560px){.detail-hero{flex-direction:column;align-items:stretch}.detail-hero .ring{align-self:center}.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.d-sec h3{font-size:14px;font-weight:700;margin-bottom:8px;font-family:'Instrument Sans',sans-serif}
+.d-sec h3{font-size:14px;font-weight:700;margin-bottom:8px;font-family:'Inter',sans-serif}
 .eval{margin:0;padding:12px 14px;background:var(--surface-2);border-radius:12px;white-space:pre-line}
 .contact{display:flex;flex-wrap:wrap;gap:8px 20px;padding:12px 14px;border:1px solid var(--line);border-radius:12px}
 .contact span{display:inline-flex;gap:7px;align-items:center;min-width:0;word-break:break-all}
@@ -365,6 +366,100 @@ body.modal-open{overflow:hidden}
 .side-foot .icon-btn{width:30px;height:30px}
 .side-foot{gap:4px}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--good);display:inline-block;margin-right:6px}
+
+/* =================== Hiro brand (Inter, #4B1EFF, #C7FF3D, #F5F6FA, #111827) =================== */
+:root{
+  --bg:#F5F6FA;--surface:#FFFFFF;--surface-2:#F7F6FC;--ink:#111827;--muted:#585C70;--faint:#9A9CB0;
+  --line:#E7E6F0;--line-strong:#D5D3E5;--brand:#4B1EFF;--brand-ink:#3915C8;--brand-soft:#EEEAFF;
+  --lime:#C7FF3D;--lime-ink:#111827;--ring-top:#5DA800;--deep:#1D0A4D;--deep-2:#2C0F7A;--art:#1D0A4D;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D0B1A;--surface:#171429;--surface-2:#1E1A36;--ink:#EEEDF7;--muted:#A9A7C4;--faint:#706E8E;
+    --line:#2A2745;--line-strong:#3A3759;--brand:#8B6BFF;--brand-ink:#A68FFF;--brand-soft:#262052;
+    --ring-top:#C7FF3D;--deep:#120632;--deep-2:#1F0B58;--art:#120632;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D0B1A;--surface:#171429;--surface-2:#1E1A36;--ink:#EEEDF7;--muted:#A9A7C4;--faint:#706E8E;
+  --line:#2A2745;--line-strong:#3A3759;--brand:#8B6BFF;--brand-ink:#A68FFF;--brand-soft:#262052;
+  --ring-top:#C7FF3D;--deep:#120632;--deep-2:#1F0B58;--art:#120632;
+}
+body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;font-feature-settings:'cv11','ss03'}
+h1,h2,h3,h4{font-family:'Inter',system-ui,sans-serif;letter-spacing:-.025em}
+.page-head h1{font-weight:800;font-size:32px;letter-spacing:-.035em}
+.panel-head h2{font-weight:700}
+.kpi-value,.fact b,.ring span,.date-block b{font-family:'Inter',system-ui,sans-serif;font-weight:800;letter-spacing:-.03em}
+.btn{border-radius:12px}
+.btn-lime{color:var(--lime-ink)}
+
+/* logo: wordmark + lime "7" mark */
+.logo{display:inline-flex;align-items:flex-start;line-height:.9;color:inherit}
+.logo-word{font-weight:900;letter-spacing:-.06em}
+.logo-mark{width:.46em;height:.46em;margin:-.06em 0 0 .03em;fill:var(--lime);stroke:var(--lime);stroke-width:2.2;stroke-linejoin:round;flex:none}
+.hl{background:var(--lime);color:var(--lime-ink);padding:0 .16em .02em;border-radius:.14em;display:inline-block;transform:rotate(-1.4deg)}
+
+/* sidebar in deep brand purple */
+.sidebar{background:linear-gradient(180deg,var(--deep) 0%,var(--deep-2) 100%);border-right:0;color:#fff}
+.sidebar .brand{flex-direction:column;align-items:flex-start;gap:4px;padding:8px 12px 24px}
+.sidebar .brand .logo{font-size:32px;color:#fff}
+.sidebar .brand small{color:rgba(255,255,255,.62);font-size:12px}
+.nav-item{color:rgba(255,255,255,.72)}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.12);color:#fff;box-shadow:inset 3px 0 0 var(--lime)}
+.nav-item.active svg{color:var(--lime)}
+.side-foot{border-top-color:rgba(255,255,255,.14)}
+.side-foot .me b{color:#fff}.side-foot .me span{color:rgba(255,255,255,.6)}
+.side-foot .icon-btn{color:rgba(255,255,255,.72)}
+.side-foot .icon-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+@media (max-width:860px){.nav-item.active{box-shadow:inset 0 3px 0 var(--lime)}}
+
+/* login panel */
+.login-art{background:var(--deep);padding:48px 52px}
+.login-art .logo{font-size:clamp(68px,8.4vw,128px);color:#fff}
+.login-art .tagline{font-size:clamp(20px,2.3vw,32px);font-weight:500;color:#fff;margin:18px 0 0;letter-spacing:-.02em;max-width:none}
+.swoosh{position:relative;white-space:nowrap}
+.swoosh::after{content:'';position:absolute;left:-4%;right:-8%;bottom:-.34em;height:.36em;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 12' preserveAspectRatio='none'%3E%3Cpath d='M3 9C30 3 64 2 97 4' stroke='%23C7FF3D' stroke-width='4.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center/100% 100%}
+.login-art .art-headline{position:relative;z-index:1;margin:0;color:#fff;font-size:clamp(36px,4.4vw,62px);font-weight:800;line-height:1.1;letter-spacing:-.035em;max-width:none}
+.art-seven{position:absolute;right:-70px;bottom:-90px;width:min(30vw,340px);opacity:.95;height:auto;fill:var(--lime);stroke:var(--lime);stroke-width:2.2;stroke-linejoin:round}
+@media (max-width:860px){
+  .login-art{padding:28px 24px 34px;min-height:300px}
+  .login-art .logo{font-size:64px}
+  .login-art .art-headline{font-size:30px}
+  .art-seven{width:170px;right:-36px;bottom:-44px}
+}
+
+/* CV database */
+.tile{width:36px;height:36px;border-radius:11px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;flex:none}
+.folders{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:18px}
+.folder{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);cursor:pointer;text-align:left;color:var(--ink);font:inherit}
+.folder:hover{border-color:var(--line-strong)}
+.folder.on{border-color:var(--brand);background:var(--brand-soft)}
+.folder.on .tile{background:var(--brand);color:#fff}
+.folder-name{flex:1;min-width:0;font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.folder-count{font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted)}
+.table tr.click{cursor:pointer}
+.table tr.click:hover td{background:var(--surface-2)}
+.table tr.click:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.count-pill{margin-left:2px;background:var(--lime);color:var(--lime-ink);border-radius:999px;padding:0 7px;font-size:11.5px;font-weight:800;line-height:19px}
+.count-pill:empty{display:none}
+.lead-summary{display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:14px;background:var(--brand-soft)}
+.lead-summary .big{font-size:34px;font-weight:800;color:var(--brand);line-height:1;letter-spacing:-.04em}
+.lead-summary p{margin:0}
+.lead-table td:first-child,.lead-table th:first-child{width:40px;padding-right:0}
+.lead-table input,.check-inline input{accent-color:var(--brand);width:16px;height:16px}
+.lead-table tr.muted-row td{opacity:.55}
+.check-inline{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:13px;cursor:pointer}
+.ring.sm{--size:34px}.ring.sm::before{inset:3px}.ring.sm span{font-size:11.5px}
+.tag-brand{background:var(--brand-soft);color:var(--brand)}
+.file-list .st{font-size:12px;color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.file-list .st.ok{color:var(--good)}.file-list .st.bad{color:var(--bad)}.file-list .st.warn{color:var(--warn)}
+.spin-sm{width:12px;height:12px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--brand);animation:spin .7s linear infinite;display:inline-block;flex:none}
+.steps-status{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:9px}
+.steps-status li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.45}
+.steps-status li svg,.steps-status li .spin-sm{margin-top:2px;flex:none}
+.steps-status li.ok{color:var(--good)}.steps-status li.bad{color:var(--bad)}.steps-status li.tip{color:var(--warn)}
+.loading-row{display:flex;align-items:center;gap:10px;color:var(--muted);padding:30px 0}
 </style>
 </head>
 <body>
@@ -373,12 +468,12 @@ body.modal-open{overflow:hidden}
 
 <div id="login" class="login" hidden>
   <section class="login-art" aria-hidden="true">
-    <div class="brand"><div class="mark">H</div><b>Hiro</b></div>
     <div>
-      <h1>Hiring made human.</h1>
-      <p>Mandates, candidates and placements for your agency, in one place.</p>
+      <div class="logo"><span class="logo-word">Hiro</span><svg class="logo-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 3.5h17L12.8 20.5H7.2l5.6-11.4H3.5z"/></svg></div>
+      <p class="tagline">Hiring made <span class="swoosh">human.</span></p>
     </div>
-    <div class="art-ring"><span>92</span></div>
+    <p class="art-headline">People.<br>Roles.<br><span class="hl">Real Matches.</span></p>
+    <svg class="art-seven" viewBox="0 0 24 24"><path d="M3.5 3.5h17L12.8 20.5H7.2l5.6-11.4H3.5z"/></svg>
   </section>
   <section class="login-form-wrap">
     <form class="login-form" id="authForm" novalidate>
@@ -406,7 +501,7 @@ body.modal-open{overflow:hidden}
 
 <div id="app" class="app" hidden>
   <aside class="sidebar">
-    <div class="brand"><div class="mark">H</div><div><b>Hiro</b><small>Agency workspace</small></div></div>
+    <div class="brand"><div class="logo" aria-label="Hiro"><span class="logo-word">Hiro</span><svg class="logo-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 3.5h17L12.8 20.5H7.2l5.6-11.4H3.5z"/></svg></div><small>Hiring made human</small></div>
     <nav id="nav" aria-label="Main"></nav>
     <div class="side-foot">
       <div class="avatar" id="meAvatar"></div>
@@ -492,7 +587,9 @@ const ICONS = {
   mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
   phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
   left:'<path d="M15 6l-6 6 6 6"/>', right:'<path d="M9 6l6 6-6 6"/>',
-  check:'<path d="m5 12 5 5 9-10"/>'
+  check:'<path d="m5 12 5 5 9-10"/>',
+  folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  spark:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>'
 };
 const icon = (n, s = 18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
@@ -513,7 +610,7 @@ async function db(promise, what){
   if (error) { console.error(what, error); throw new Error(friendlyError(error, what)); }
   return data;
 }
-function blankState(){ return { stages:[], users:[], clients:[], jobs:[], candidates:[], activity:[] }; }
+function blankState(){ return { stages:[], users:[], clients:[], jobs:[], candidates:[], activity:[], talent:null, talentCount:0 }; }
 
 let S = blankState();
 let me = null, view = 'dashboard', activeJobId = null, jobFilter = 'open', dragId = null, charts = [];
@@ -525,6 +622,7 @@ const isAdmin = () => !!me && me.role === 'admin';
 const canFees = () => isAdmin() || !!(me && me.canViewCommercials);
 const canContact = () => isAdmin() || !!(me && me.canDownloadCV);
 const canExport = () => isAdmin() || !!(me && me.canExportCSV);
+const canSearch = () => isAdmin() || !!(me && me.canSearch);
 const userById = id => S.users.find(u => u.id === id);
 const jobById = id => S.jobs.find(j => j.id === id);
 const clientById = id => S.clients.find(c => c.id === id);
@@ -547,7 +645,7 @@ function logActivity(text, jobId){
 }
 
 /* =================== mapping =================== */
-const mapUser = r => ({ id:r.id, name:r.full_name, email:r.email, role:r.role, canDownloadCV:!!r.can_download_cv, canExportCSV:!!r.can_export_csv, canViewCommercials:!!r.can_view_commercials, active:!!r.is_active, createdAt:r.created_at });
+const mapUser = r => ({ id:r.id, name:r.full_name, email:r.email, role:r.role, canDownloadCV:!!r.can_download_cv, canExportCSV:!!r.can_export_csv, canViewCommercials:!!r.can_view_commercials, canSearch:!!r.can_search_database, active:!!r.is_active, createdAt:r.created_at });
 const mapClient = r => ({ id:r.id, name:r.company_name, industry:r.industry || '', spocName:r.spoc_name || '', spocEmail:r.spoc_email || '', spocPhone:r.spoc_phone || '', feePercent:num(r.commission_percentage), guaranteeDays:r.replacement_guarantee_days, creditDays:r.payment_terms_days, status:r.status, full:true });
 const mapStage = r => ({ id:r.id, label:r.label, color:STAGE_COLORS[r.color] ? r.color : 'slate', type:r.stage_type, position:r.position });
 const mapJob = (r, assign) => ({ id:r.id, clientId:r.client_id, title:r.title, location:r.location || '', budgetLPA:num(r.budget_lpa), minExp:num(r.min_exp_years), maxExp:num(r.max_exp_years), openings:r.openings || 1, status:r.status, skills:r.required_skills || [], jdText:r.jd_content || '', assignedRecruiterIds:assign.filter(a => a.job_id === r.id).map(a => a.user_id), createdAt:r.created_at });
@@ -557,27 +655,40 @@ function mapCandidate(r, contacts, ledger){
     expYears:num(r.total_exp_years), currentCTC:num(r.current_ctc_lpa), expectedCTC:num(r.expected_ctc_lpa), offeredCTC:num(r.offered_ctc_lpa),
     noticeDays:r.notice_period_days || 0, atsScore:r.ats_score || 0, feedback:r.ats_feedback || '', matchedSkills:r.matched_skills || [], missingSkills:r.missing_skills || [],
     interviewAt:r.interview_at || '', joiningDate:r.joining_date || '', rejectReason:r.reject_reason || '', source:r.source,
-    cvPath:r.cv_path || '', cvName:r.cv_file_name || '', hasCV:!!r.cv_path, uploadedBy:r.uploaded_by, createdAt:r.created_at, updatedAt:r.updated_at,
+    cvPath:r.cv_path || '', cvName:r.cv_file_name || '', hasCV:!!r.cv_path, uploadedBy:r.uploaded_by, talentId:r.talent_id || null, createdAt:r.created_at, updatedAt:r.updated_at,
     email: ct ? ct.email || '' : '', phone: ct ? ct.phone || '' : '', placement:p, invoiceStatus: p ? p.invoice_status : 'pending' };
 }
 const candidateRow = c => ({ full_name:c.name, current_company:c.company || null, current_title:c.title || null, total_exp_years:c.expYears || 0,
   current_ctc_lpa:c.currentCTC || 0, expected_ctc_lpa:c.expectedCTC || 0, notice_period_days:c.noticeDays || 0, ats_score:c.atsScore || 0,
   ats_feedback:c.feedback || null, matched_skills:c.matchedSkills || [], missing_skills:c.missingSkills || [] });
 
+// Supabase returns at most 1000 rows per request, so large tables are read in pages.
+async function fetchAll(make, what, cap = 50000){
+  const out = [];
+  for (let from = 0; from < cap; from += 1000) {
+    const part = await db(make().range(from, from + 999), what);
+    out.push(...part);
+    if (part.length < 1000) break;
+  }
+  return out;
+}
 async function loadAll(){
-  const fees = canFees(), contact = canContact();
+  const permKey = () => me ? [me.role, me.canViewCommercials, me.canDownloadCV, me.canSearch, me.active].join() : '';
+  const before = permKey();
+  const fees = canFees(), contact = canContact(), search = canSearch();
   const none = Promise.resolve([]);
-  const [stages, users, dir, clients, jobs, assign, cands, contacts, acts, ledger] = await Promise.all([
+  const [stages, users, dir, clients, jobs, assign, cands, contacts, acts, ledger, talentCount] = await Promise.all([
     db(sb.from('pipeline_stages').select('*').order('position').order('created_at'), 'load stages'),
     db(sb.from('agency_users').select('*').order('full_name'), 'load the team'),
     db(sb.from('client_directory').select('*'), 'load clients'),
     fees ? db(sb.from('clients').select('*').order('company_name'), 'load clients') : none,
     db(sb.from('jobs').select('*').order('created_at'), 'load mandates'),
-    db(sb.from('job_recruiters').select('job_id,user_id'), 'load assignments'),
-    db(sb.from('candidates').select('*').order('created_at', { ascending:false }).limit(10000), 'load candidates'),
-    contact ? db(sb.from('candidate_contacts').select('candidate_id,email,phone').limit(10000), 'load contact details') : none,
+    fetchAll(() => sb.from('job_recruiters').select('job_id,user_id').order('job_id'), 'load assignments'),
+    fetchAll(() => sb.from('candidates').select('*').order('created_at', { ascending:false }).order('id'), 'load candidates'),
+    contact ? fetchAll(() => sb.from('candidate_contacts').select('candidate_id,email,phone').order('candidate_id'), 'load contact details') : none,
     db(sb.from('activity_log').select('*').order('created_at', { ascending:false }).limit(60), 'load activity'),
-    fees ? db(sb.from('placement_ledger').select('*'), 'load placements') : none
+    fees ? fetchAll(() => sb.from('placement_ledger').select('*').order('placement_id'), 'load placements') : none,
+    search ? sb.from('talent_profiles').select('id', { count:'exact', head:true }).then(r => (r.error ? 0 : r.count || 0)) : Promise.resolve(0)
   ]);
   const cmap = new Map(clients.map(r => [r.id, mapClient(r)]));
   dir.forEach(d => { if (!cmap.has(d.id)) cmap.set(d.id, { id:d.id, name:d.company_name, full:false }); });
@@ -589,10 +700,15 @@ async function loadAll(){
     clients: [...cmap.values()].sort((a, b) => a.name.localeCompare(b.name)),
     jobs: jobs.map(r => mapJob(r, assign)),
     candidates: cands.map(r => mapCandidate(r, ctmap, lmap)),
-    activity: acts.map(a => ({ at:a.created_at, by:a.actor_id, text:a.message, jobId:a.job_id }))
+    activity: acts.map(a => ({ at:a.created_at, by:a.actor_id, text:a.message, jobId:a.job_id })),
+    talent: null,
+    talentCount
   };
   const fresh = userById(me.id);
   if (fresh) me = fresh;
+  // Permissions changed since the last load: load again so the right data is fetched.
+  if (before && before !== permKey() && !loadAll.again) { loadAll.again = true; try { await loadAll(); } finally { loadAll.again = false; } return; }
+  if (view === 'database' && canSearch()) await loadTalent();
 }
 async function refreshNow(){
   try { await loadAll(); } catch (e) { toast(e.message, 'error'); return; }
@@ -667,7 +783,7 @@ function ring(score, lg){
   const c = s >= 85 ? 'var(--ring-top)' : s >= 70 ? 'var(--brand)' : s >= 50 ? 'var(--warn)' : 'var(--bad)';
   return `<div class="ring${lg ? ' lg' : ''}" style="--p:${s};--rc:${c}" title="Match score ${s} out of 100" aria-label="Match score ${s} out of 100"><span>${s}</span></div>`;
 }
-function pageHead(title, sub, actions = ''){ return `<header class="page-head"><div><h1>${esc(title)}</h1>${sub ? `<p class="page-sub">${sub}</p>` : ''}</div><div class="page-actions">${actions}</div></header>`; }
+function pageHead(title, sub, actions = '', titleHtml){ return `<header class="page-head"><div><h1>${titleHtml || esc(title)}</h1>${sub ? `<p class="page-sub">${sub}</p>` : ''}</div><div class="page-actions">${actions}</div></header>`; }
 function emptyBlock(title, text, action = ''){ return `<div class="empty"><b>${esc(title)}</b><p>${esc(text)}</p>${action}</div>`; }
 function downloadBlob(blob, name){ const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 3000); }
 async function copyText(t){
@@ -687,14 +803,14 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && modalStack.length && !modalStack[modalStack.length - 1]._busy) { closeModal(); return; }
-  if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('cand')) openCandidate(e.target.dataset.id);
+  if (e.key === 'Enter' && e.target.matches && e.target.matches('[data-act]:not(button):not(a):not(input):not(select):not(textarea)')) e.target.click();
 });
 
 /* =================== screens: boot, sign-in, pending =================== */
 function showBoot(text){ $('#boot').hidden = false; $('#bootText').textContent = text || 'Loading Hiro…'; $('#login').hidden = true; $('#app').hidden = true; }
 let authMode = 'signin';
 function showAuth(message, isError){
-  me = null; killCharts();
+  me = null; S = blankState(); matchCache.clear(); killCharts();
   while (modalStack.length) closeModal();
   if (channel) { sb.removeChannel(channel); channel = null; }
   $('#boot').hidden = true; $('#app').hidden = true; $('#login').hidden = false;
@@ -717,7 +833,7 @@ function setAuthMode(mode){
   $('#authError').textContent = ''; $('#authNote').textContent = '';
 }
 function showPending(email){
-  me = null; killCharts();
+  me = null; S = blankState(); matchCache.clear(); killCharts();
   while (modalStack.length) closeModal();
   if (channel) { sb.removeChannel(channel); channel = null; }
   $('#boot').hidden = true; $('#app').hidden = true; $('#login').hidden = false;
@@ -798,6 +914,7 @@ const VIEWS = [
   { id:'dashboard', label:'Overview', icon:'grid' },
   { id:'pipeline', label:'Pipeline', icon:'columns' },
   { id:'jobs', label:'Mandates', icon:'briefcase' },
+  { id:'database', label:'CV Database', icon:'folder', show:canSearch },
   { id:'clients', label:'Clients', icon:'building', show:canFees },
   { id:'placements', label:'Placements', icon:'receipt', show:canFees },
   { id:'team', label:'Team', icon:'users', show:isAdmin },
@@ -817,7 +934,7 @@ ACTIONS.go = id => go(id);
 function render(){
   if (!me) return;
   killCharts();
-  ({ dashboard:renderDashboard, pipeline:renderPipeline, jobs:renderJobs, clients:renderClients, placements:renderPlacements, team:renderTeam, settings:renderSettings })[view]();
+  ({ dashboard:renderDashboard, pipeline:renderPipeline, jobs:renderJobs, database:renderDatabase, clients:renderClients, placements:renderPlacements, team:renderTeam, settings:renderSettings })[view]();
 }
 
 /* =================== overview =================== */
@@ -843,6 +960,7 @@ function renderDashboard(){
     const unpaid = joined.filter(c => c.invoiceStatus !== 'paid').reduce((s, c) => s + feeFor(c).amount, 0);
     kpis.push(['Placement fees', inr(billed), `${inr(unpaid)} still to collect`]);
   }
+  if (canSearch()) kpis.push(['CV database', S.talentCount, 'profiles saved']);
   const jobIds = new Set(jobs.map(j => j.id));
   const acts = S.activity.filter(a => !a.jobId || jobIds.has(a.jobId)).slice(0, 8);
   const health = openJobs.map(j => {
@@ -852,7 +970,7 @@ function renderDashboard(){
   const firstRun = isAdmin() && !S.clients.length;
 
   $('#view').innerHTML = `
-    ${pageHead(`${greet}, ${firstName(me.name)}`, upcoming.length ? `You have ${upcoming.length} interview${upcoming.length > 1 ? 's' : ''} coming up this week.` : 'Here’s where your mandates stand today.')}
+    ${pageHead('', upcoming.length ? `You have ${upcoming.length} interview${upcoming.length > 1 ? 's' : ''} coming up this week.` : 'Here’s where your mandates stand today.', '', `${esc(greet)}, <span class="hl">${esc(firstName(me.name))}</span>`)}
     ${firstRun ? `<div class="alert info" style="margin-bottom:18px">${icon('info',16)}<span>Welcome to Hiro. Start by adding a client, then create a mandate for them. Team members can create an account from the sign-in page; you’ll switch them on in Team.</span></div>` : ''}
     <section class="kpi-strip">${kpis.map(k => `<div class="kpi"><div class="kpi-label">${k[0]}</div><div class="kpi-value">${esc(k[1])}</div><div class="kpi-foot">${esc(k[2])}</div></div>`).join('')}</section>
     <div class="dash">
@@ -881,7 +999,7 @@ function renderDashboard(){
   drawFunnel(cands);
   if (isAdmin()) drawTeam();
 }
-function chartDefaults(){ Chart.defaults.font.family = "'Instrument Sans', system-ui, sans-serif"; Chart.defaults.color = cssVar('--muted'); }
+function chartDefaults(){ Chart.defaults.font.family = "'Inter', system-ui, sans-serif"; Chart.defaults.color = cssVar('--muted'); }
 function drawFunnel(cands){
   const el = $('#funnelChart'); if (!el || !window.Chart) return; chartDefaults();
   charts.push(new Chart(el, { type:'bar',
@@ -925,6 +1043,7 @@ function renderPipeline(){
       </div>
       <div class="page-actions">
         <button class="btn btn-ghost" data-act="add-cand">${icon('plus')}Add candidate</button>
+        ${canSearch() ? `<button class="btn btn-ghost" data-act="lead-finder" data-id="${esc(job.id)}" id="dbMatchBtn">${icon('folder')}CV database<span class="count-pill" id="dbMatchCount"></span></button>` : ''}
         <button class="btn btn-lime" data-act="upload">${icon('upload')}Upload CVs</button>
         ${canExport() ? `<button class="btn btn-ghost" data-act="export-csv" title="Download the candidates shown as a CSV file">${icon('download')}<span class="hide-sm">Export</span></button>` : ''}
       </div>
@@ -943,6 +1062,7 @@ function renderPipeline(){
   $('#minScore').onchange = e => { pf.min = +e.target.value; renderBoard(); };
   $('#sortBy').onchange = e => { pf.sort = e.target.value; renderBoard(); };
   renderBoard();
+  loadMatchCount(job.id);
 }
 function filteredCandidates(){
   let list = S.candidates.filter(c => c.jobId === activeJobId);
@@ -967,6 +1087,7 @@ function cardHTML(c, isDup){
   const t0 = startOfToday();
   const interview = c.interviewAt && new Date(c.interviewAt) >= t0 && !isClosedType(stageType(c.stage)) ? `<span class="tag tag-amber">${icon('calendar',12)}${esc(fmtDateTime(c.interviewAt))}</span>` : '';
   const dup = isDup ? `<span class="tag tag-bad">Possible duplicate</span>` : '';
+  const fromDb = c.source === 'database' ? `<span class="tag tag-brand">${icon('folder',12)}From CV database</span>` : '';
   const reason = stageType(c.stage) === 'rejected' && c.rejectReason ? `<span class="tag tag-muted">${esc(c.rejectReason)}</span>` : '';
   const skills = c.matchedSkills.slice(0, 3).map(s => `<span class="chip">${esc(s)}</span>`).join('') + (c.matchedSkills.length > 3 ? `<span class="chip chip-more">+${c.matchedSkills.length - 3}</span>` : '');
   const sub = [c.title, c.company].filter(Boolean).join(' at ') || 'Details not added yet';
@@ -974,7 +1095,7 @@ function cardHTML(c, isDup){
     <div class="cand-top"><div class="cand-id"><h4>${esc(c.name)}</h4><p>${esc(sub)}</p></div>${ring(c.atsScore)}</div>
     ${skills ? `<div class="chips">${skills}</div>` : ''}
     <div class="cand-meta"><span>${c.expYears ? `${c.expYears} yrs` : 'Exp not set'}</span><span>${c.expectedCTC ? `Expects ₹${c.expectedCTC}L` : 'CTC not set'}</span><span>${c.noticeDays ? `${c.noticeDays}d notice` : 'Notice not set'}</span></div>
-    ${interview || dup || reason ? `<div class="tags">${interview}${dup}${reason}</div>` : ''}
+    ${interview || dup || reason || fromDb ? `<div class="tags">${fromDb}${interview}${dup}${reason}</div>` : ''}
   </article>`;
 }
 function renderBoard(){
@@ -1077,6 +1198,7 @@ async function openCandidate(id){
   const footer = `
     ${canContact() && c.hasCV ? `<button class="btn btn-ghost" data-act="dl-cv" data-id="${esc(c.id)}">${icon('download',16)}CV</button>` : ''}
     <button class="btn btn-ghost" data-act="edit-cand" data-id="${esc(c.id)}">${icon('edit',16)}Edit</button>
+    ${c.talentId && canSearch() ? `<button class="btn btn-ghost" data-act="talent-from-cand" data-id="${esc(c.id)}">${icon('folder',16)}Profile</button>` : ''}
     ${isAdmin() ? `<button class="btn btn-text danger" data-act="del-cand" data-id="${esc(c.id)}">Delete</button>` : ''}
     <span class="spacer"></span>
     <button class="btn btn-lime" data-act="pitch" data-id="${esc(c.id)}">${icon('copy',16)}Copy client pitch</button>`;
@@ -1109,10 +1231,10 @@ ACTIONS['del-cand'] = async id => {
   const c = candById(id); if (!c) return;
   if (!(await confirmDialog(`Delete ${c.name} and their CV? This can’t be undone.`))) return;
   try {
-    if (c.cvPath) await sb.storage.from(CV_BUCKET).remove([c.cvPath]);
+    if (c.cvPath && !c.talentId) await sb.storage.from(CV_BUCKET).remove([c.cvPath]); // the CV database keeps its copy
     await db(sb.from('candidates').delete().eq('id', id), 'delete this candidate');
   } catch (e) { toast(e.message, 'error'); return; }
-  S.candidates = S.candidates.filter(x => x.id !== id);
+  S.candidates = S.candidates.filter(x => x.id !== id); matchCache.delete(c.jobId);
   logActivity(`${firstName(me.name)} deleted ${c.name}`, c.jobId);
   closeModal(); rerender(); toast(`${c.name} deleted.`);
 };
@@ -1147,18 +1269,6 @@ function guessMime(name){
   const ext = (name.split('.').pop() || '').toLowerCase();
   return { pdf:'application/pdf', docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document', txt:'text/plain' }[ext] || '';
 }
-async function uploadCv(candId, jobId, file){
-  if (file.size > 5 * 1024 * 1024) throw new Error(`${file.name} is larger than 5 MB.`);
-  const type = guessMime(file.name);
-  if (!type) throw new Error(`${file.name} isn’t a PDF, .docx or .txt file.`);
-  const safe = file.name.replace(/[^\w.\-]+/g, '_').slice(-80);
-  const path = `${jobId}/${candId}/${Date.now()}-${safe}`;
-  const { error } = await sb.storage.from(CV_BUCKET).upload(path, file, { contentType: type, upsert: false });
-  if (error) throw new Error(friendlyError(error, 'upload the CV'));
-  await db(sb.from('candidates').update({ cv_path: path, cv_file_name: file.name }).eq('id', candId), 'save the CV link');
-  return path;
-}
-
 /* ---------- add / edit candidate ---------- */
 function openCandidateForm(id, stageId){
   const editing = id ? candById(id) : null;
@@ -1198,33 +1308,40 @@ function openCandidateForm(id, stageId){
     if (email && !EMAIL_FULL.test(email)) throw new Error('That email doesn’t look right. Fix it or leave it blank.');
     const file = $('#fCv', w).files[0];
     if (file && !guessMime(file.name)) throw new Error('Attach a PDF, .docx or .txt file.');
+    if (file && file.size > 5 * 1024 * 1024) throw new Error('That CV is larger than 5 MB.');
     const skills = $('#fSkills', w).value.split(',').map(s => s.trim()).filter(Boolean);
     const lower = skills.map(s => s.toLowerCase());
     const missing = job.skills.filter(s => !lower.includes(s.toLowerCase()));
-    const exp = num($('#fExp', w).value), rawScore = $('#fScore', w).value.trim();
+    const exp = clamp(num($('#fExp', w).value), 0, 60), rawScore = $('#fScore', w).value.trim();
     const score = rawScore === '' ? scoreProfile(job.skills.length - missing.length, job.skills.length, exp, job) : clamp(Math.round(num(rawScore)), 0, 100);
-    const data = { name, company: $('#fCompany', w).value.trim(), title: $('#fTitle', w).value.trim(), expYears: exp, currentCTC: num($('#fCur', w).value),
-      expectedCTC: num($('#fExpCtc', w).value), noticeDays: Math.round(num($('#fNotice', w).value)), atsScore: score, matchedSkills: skills, missingSkills: missing,
-      feedback: $('#fFeedback', w).value.trim() };
+    const data = { name, company: $('#fCompany', w).value.trim(), title: $('#fTitle', w).value.trim(), expYears: exp, currentCTC: clamp(num($('#fCur', w).value), 0, 9999),
+      expectedCTC: clamp(num($('#fExpCtc', w).value), 0, 9999), noticeDays: clamp(Math.round(num($('#fNotice', w).value)), 0, 365), atsScore: score, matchedSkills: skills, missingSkills: missing,
+      feedback: $('#fFeedback', w).value.trim(), skills };
     const stage_id = $('#fStage', w).value;
+    let cvPath = null;
+    if (file) { try { cvPath = await storeCvFile(file); } catch (e) { toast(`The CV didn’t upload: ${e.message}`, 'error'); } }
     let candId;
     if (editing) {
       candId = editing.id;
-      await db(sb.from('candidates').update({ ...candidateRow(data), stage_id }).eq('id', candId), 'save the candidate');
+      await db(sb.from('candidates').update({ ...candidateRow(data), stage_id, ...(cvPath ? { cv_path: cvPath, cv_file_name: file.name } : {}) }).eq('id', candId), 'save the candidate');
       if (showContact) await db(sb.from('candidate_contacts').upsert({ candidate_id: candId, email: email || null, phone: phone || null }), 'save contact details');
       logActivity(`${firstName(me.name)} updated ${name}`, job.id);
     } else {
-      const ins = await db(sb.from('candidates').insert({ ...candidateRow(data), stage_id, job_id: job.id, uploaded_by: me.id, source: 'manual' }).select('id').single(), 'add the candidate');
+      // Every candidate is also kept in the CV database (matched by phone or email).
+      const saved = await db(sb.rpc('save_talent', { p: talentPayload(data, { cv_path: cvPath || '', cv_file_name: cvPath ? file.name : '', source: 'manual' }), p_email: email || null, p_phone: phone || null }), 'save to the CV database');
+      if (S.candidates.some(c => c.jobId === job.id && c.talentId === saved.id)) throw new Error(`${name} is already in this mandate (same phone or email).`);
+      const ins = await db(sb.from('candidates').insert({ ...candidateRow(data), stage_id, job_id: job.id, uploaded_by: me.id, source: 'manual', talent_id: saved.id,
+        cv_path: cvPath, cv_file_name: cvPath ? file.name : null }).select('id').single(), 'add the candidate');
       candId = ins.id;
       await db(sb.from('candidate_contacts').insert({ candidate_id: candId, email: email || null, phone: phone || null }), 'save contact details');
       logActivity(`${firstName(me.name)} added ${name} to ${job.title}`, job.id);
+      matchCache.delete(job.id);
     }
-    if (file) { try { await uploadCv(candId, job.id, file); } catch (e) { toast(`Candidate saved, but the CV didn’t upload: ${e.message}`, 'error'); } }
-    const dupes = showContact ? await findDuplicates(phone, email, candId) : [];
+    const dupes = showContact ? (await findDuplicates(phone, email, candId)).filter(d => d.job_id !== job.id) : [];
     w._busy = false; closeModal();
     await refreshNow();
     toast(editing ? 'Changes saved.' : `${name} added.`, 'success');
-    if (dupes.length) toast(`Possible duplicate: ${dupes[0].full_name} is already in ${dupes[0].job_title}.`, 'warn', candById(dupes[0].candidate_id) ? { label:'View', run:() => openCandidate(dupes[0].candidate_id) } : undefined);
+    if (dupes.length) toast(`${dupes[0].full_name} is also in ${dupes[0].job_title}.`, 'info', candById(dupes[0].candidate_id) ? { label:'View', run:() => openCandidate(dupes[0].candidate_id) } : undefined);
   }, $('#fError', w));
 }
 
@@ -1267,18 +1384,22 @@ async function extractText(file){
   if (ext === 'docx') { if (!window.mammoth) throw new Error('Word reader didn’t load'); return (await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })).value; }
   return await file.text();
 }
+const COMMON_SKILLS = ['JavaScript','TypeScript','React','Angular','Vue','Next.js','Node.js','Express','Python','Django','Flask','FastAPI','Java','Spring Boot','Kotlin','Swift','Flutter','React Native','Android','iOS','Go','Golang','Ruby','Rails','PHP','Laravel','C#','.NET','C++','SQL','PostgreSQL','MySQL','MongoDB','Redis','GraphQL','REST','AWS','Azure','GCP','Docker','Kubernetes','Terraform','Jenkins','CI/CD','Linux','Git','Kafka','Spark','Airflow','Databricks','Snowflake','Power BI','Tableau','Excel','Pandas','Machine Learning','Deep Learning','TensorFlow','PyTorch','NLP','Computer Vision','Selenium','Cypress','Jira','Figma','Adobe XD','Photoshop','Product Roadmap','Wireframing','Agile','Scrum','Analytics','A/B Testing','SEO','Google Ads','Salesforce','HubSpot','B2B Sales','Lead Generation','Recruitment','Payroll','Tally','GST','Accounting','Supply Chain','Operations','Customer Success','Communication'];
 function heuristicProfile(text, fileName, job){
-  const lower = String(text || '').toLowerCase(), matched = [], missing = [];
-  job.skills.forEach(s => (skillInText(lower, s) ? matched : missing).push(s));
-  const expM = String(text || '').match(/(\d{1,2}(?:\.\d)?)\s*\+?\s*(?:years|yrs|year)/i);
+  const raw = String(text || ''), lower = raw.toLowerCase();
+  const matched = [], missing = [];
+  if (job) job.skills.forEach(s => (skillInText(lower, s) ? matched : missing).push(s));
+  const skills = [...new Set([...matched, ...COMMON_SKILLS.filter(s => skillInText(lower, s))])].slice(0, 20);
+  const expM = raw.match(/(\d{1,2}(?:\.\d)?)\s*\+?\s*(?:years|yrs|year)/i);
   const exp = expM ? Math.min(40, parseFloat(expM[1])) : 0;
   const readable = lower.trim().length > 30;
   return {
-    name: guessName(text, fileName), email: (String(text || '').match(EMAIL_RE) || [''])[0], phone: findPhone(text),
-    company: '', title: '', expYears: exp, currentCTC: 0, expectedCTC: 0, noticeDays: 0,
-    atsScore: readable ? scoreProfile(matched.length, job.skills.length, exp, job) : 0,
+    name: guessName(raw, fileName), email: (raw.match(EMAIL_RE) || [''])[0], phone: findPhone(raw),
+    company: '', title: '', location: '', expYears: exp, currentCTC: 0, expectedCTC: 0, noticeDays: 0,
+    skills, folder: '', summary: '',
+    atsScore: job && readable ? scoreProfile(matched.length, job.skills.length, exp, job) : 0,
     matchedSkills: matched, missingSkills: missing,
-    feedback: readable
+    feedback: !job ? '' : readable
       ? `Matched ${matched.length} of ${job.skills.length} required skills${exp ? `; ${exp} years of experience mentioned` : ''}. Scored on skills and experience; check the CV for salary and notice period.`
       : 'Couldn’t read text from this file (it may be a scanned image). Open the CV and fill in the details by hand.'
   };
@@ -1288,59 +1409,125 @@ function parseJSONLoose(t){
   try { return JSON.parse(s); } catch (e) { const a = s.indexOf('{'), b = s.lastIndexOf('}'); if (a > -1 && b > a) return JSON.parse(s.slice(a, b + 1)); throw new Error('The AI reply wasn’t valid JSON'); }
 }
 // AI runs in a Supabase Edge Function so the API key never reaches the browser.
-async function aiComplete(prompt){
-  const { data, error } = await sb.functions.invoke(AI_FUNCTION, { body: { prompt } });
+function withTimeout(promise, ms, message){
+  let t; return Promise.race([promise, new Promise((_, rej) => { t = setTimeout(() => rej(new Error(message)), ms); })]).finally(() => clearTimeout(t));
+}
+async function invokeAi(body, ms){
+  const { data, error } = await withTimeout(sb.functions.invoke(AI_FUNCTION, { body }), ms, `No reply after ${Math.round(ms / 1000)} seconds`);
   if (error) {
-    let msg = error.message || 'AI request failed', status = error.context && error.context.status;
+    let msg = error.message || 'AI request failed';
+    const status = error.context && error.context.status;
     try { const b = await error.context.json(); if (b && b.error) msg = b.error; } catch (e) {}
-    if (status === 404 || /failed to send|fetch/i.test(msg)) { aiState = 'missing'; msg = 'The score-cv function isn’t set up in Supabase yet'; }
+    if (status === 404 || /failed to send|failed to fetch/i.test(msg)) { aiState = 'missing'; msg = 'The score-cv function isn’t set up in Supabase yet'; }
     else if (/not set up/i.test(msg)) aiState = 'missing';
     throw new Error(msg);
   }
+  return data;
+}
+async function aiComplete(prompt){
+  const data = await invokeAi({ prompt }, 35000);
   if (!data || !data.text) throw new Error('The AI sent back an empty reply');
   aiState = 'ok';
-  return { text: data.text, model: data.model };
+  return data;
+}
+const DEFAULT_FOLDERS = ['Product Manager','Project / Program Manager','Software Engineer','Frontend Developer','Backend Developer','Full Stack Developer','Mobile Developer','DevOps / Cloud','Data Analyst','Data Engineer','Data Scientist / ML','QA / Test Engineer','UI/UX Designer','Business Analyst','Sales','Marketing','Customer Success','Operations','Finance & Accounts','HR & Recruitment','Leadership'];
+function folderNames(){
+  const set = new Set(DEFAULT_FOLDERS);
+  (S.talent || []).forEach(t => { if (t.folder && t.folder !== 'Uncategorised') set.add(t.folder); });
+  return [...set];
+}
+// Emails and phone numbers are removed before CV text leaves the browser or is stored for search.
+function redact(text){
+  return String(text || '')
+    .replace(new RegExp(EMAIL_RE.source, 'gi'), '[email]')
+    .replace(/\+?\d[\d\s().-]{8,16}\d/g, m => (m.replace(/\D/g, '').length >= 10 ? '[phone]' : m));
 }
 async function aiProfile(text, fileName, job){
-  if (String(text || '').trim().length < 30) throw new Error('No readable text in the file');
-  const prompt = `You are screening a CV for a recruitment agency.
-Role: ${job.title}
-Budget: ${job.budgetLPA} LPA
-Experience wanted: ${job.minExp}-${job.maxExp} years
-Required skills: ${job.skills.join(', ')}
-Job description: ${(job.jdText || '').slice(0, 1500)}
-
-CV text:
-${String(text).slice(0, 9000)}
+  const clean = redact(text);
+  if (clean.trim().length < 30) throw new Error('No readable text in the file');
+  const role = job ? `\nRole: ${job.title}\nBudget: ${job.budgetLPA || 'not set'} LPA\nExperience wanted: ${job.minExp}-${job.maxExp} years\nRequired skills: ${job.skills.join(', ')}\nJob description: ${(job.jdText || '').slice(0, 1200)}\n` : '';
+  const prompt = `You are screening a CV for a recruitment agency.${role}
+CV text (contact details removed):
+${clean.slice(0, 7000)}
 
 Return ONLY a JSON object with these keys:
-"name" (string), "email" (string, "" if absent), "phone" (string, "" if absent), "currentCompany" (string), "currentTitle" (string),
+"name" (string), "currentCompany" (string), "currentTitle" (string), "location" (city, "" if unknown),
 "totalExpYears" (number), "currentCtcLpa" (number, 0 if not stated), "expectedCtcLpa" (number, 0 if not stated), "noticePeriodDays" (number, 0 if not stated),
-"atsScore" (integer 0-100 for fit with the role), "matchedSkills" (array, only from the required skills), "missingSkills" (array, only from the required skills),
-"evaluation" (2-3 plain sentences). Never invent contact details or salary figures.`;
+"skills" (array of up to 15 key skills from the CV), "profileCategory" (the best fit from: ${folderNames().join(' | ')}; only use a new short role name if none fit),
+"summary" (one plain sentence)${job ? `,
+"atsScore" (integer 0-100 for fit with the role), "matchedSkills" (array, only from the required skills), "missingSkills" (array, only from the required skills), "evaluation" (2-3 plain sentences)` : ''}.
+Never invent salary figures.`;
   const o = parseJSONLoose((await aiComplete(prompt)).text);
   const h = heuristicProfile(text, fileName, job);
+  const arr = v => (Array.isArray(v) ? v.map(x => String(x).trim()).filter(Boolean) : null);
   return {
-    name: String(o.name || '').trim() || h.name, email: EMAIL_FULL.test(String(o.email || '').trim()) ? String(o.email).trim() : h.email,
-    phone: normalizePhone(o.phone) || String(o.phone || '').trim() || h.phone,
-    company: String(o.currentCompany || ''), title: String(o.currentTitle || ''),
-    expYears: num(o.totalExpYears) || h.expYears, currentCTC: num(o.currentCtcLpa), expectedCTC: num(o.expectedCtcLpa), noticeDays: Math.round(num(o.noticePeriodDays)),
-    atsScore: clamp(Math.round(num(o.atsScore)), 0, 100) || h.atsScore,
-    matchedSkills: Array.isArray(o.matchedSkills) ? o.matchedSkills.map(String) : h.matchedSkills,
-    missingSkills: Array.isArray(o.missingSkills) ? o.missingSkills.map(String) : h.missingSkills,
-    feedback: (String(o.evaluation || '').trim() || h.feedback) + '\n(Scored by AI)'
+    name: String(o.name || '').trim() || h.name, email: h.email, phone: h.phone,
+    company: String(o.currentCompany || ''), title: String(o.currentTitle || ''), location: String(o.location || ''),
+    expYears: clamp(num(o.totalExpYears) || h.expYears, 0, 60), currentCTC: clamp(num(o.currentCtcLpa), 0, 9999), expectedCTC: clamp(num(o.expectedCtcLpa), 0, 9999),
+    noticeDays: clamp(Math.round(num(o.noticePeriodDays)), 0, 365),
+    skills: (arr(o.skills) || h.skills).slice(0, 20), folder: String(o.profileCategory || '').trim().slice(0, 60), summary: String(o.summary || '').slice(0, 400),
+    atsScore: job ? (clamp(Math.round(num(o.atsScore)), 0, 100) || h.atsScore) : 0,
+    matchedSkills: job ? (arr(o.matchedSkills) || h.matchedSkills) : [], missingSkills: job ? (arr(o.missingSkills) || h.missingSkills) : [],
+    feedback: job ? (String(o.evaluation || '').trim() || h.feedback) + '\n(Scored by AI)' : ''
   };
 }
 
-/* ---------- bulk upload ---------- */
-ACTIONS.upload = () => openUpload();
-function openUpload(){
-  const job = jobById(activeJobId); if (!job) return;
+/* ---------- bulk upload (runs several CVs at once) ---------- */
+const UPLOAD_CONCURRENCY = 4;
+function cvPathFor(file){
+  const id = (crypto.randomUUID && crypto.randomUUID()) || (Date.now().toString(36) + Math.random().toString(36).slice(2));
+  return `cv/${id}/${Date.now()}-${file.name.replace(/[^\w.\-]+/g, '_').slice(-80)}`;
+}
+async function storeCvFile(file){
+  const path = cvPathFor(file);
+  const { error } = await sb.storage.from(CV_BUCKET).upload(path, file, { contentType: guessMime(file.name), upsert: false });
+  if (error) throw new Error(friendlyError(error, 'upload the CV'));
+  return path;
+}
+function talentPayload(p, extra){
+  return { full_name: p.name, current_company: p.company || '', current_title: p.title || '', total_exp_years: num(p.expYears), current_ctc_lpa: num(p.currentCTC),
+    expected_ctc_lpa: num(p.expectedCTC), notice_period_days: Math.round(num(p.noticeDays)), skills: p.skills || [], profile_category: p.folder || '',
+    location: p.location || '', summary: p.summary || '', ...extra };
+}
+async function processCv(file, job, ctx){
+  const text = await extractText(file).catch(() => '');
+  const useAi = !ctx.aiOff && aiState !== 'missing';
+  const [prof, cvPath] = await Promise.all([
+    useAi ? aiProfile(text, file.name, job).catch(e => { ctx.aiFailed(e); return null; }) : Promise.resolve(null),
+    storeCvFile(file).catch(e => { console.warn(e); return null; })
+  ]);
+  const p = prof || heuristicProfile(text, file.name, job);
+  const saved = await db(sb.rpc('save_talent', {
+    p: talentPayload(p, { cv_text: redact(text).slice(0, 30000), cv_path: cvPath || '', cv_file_name: cvPath ? file.name : '', source: 'cv-upload' }),
+    p_email: p.email || null, p_phone: p.phone || null
+  }), 'save to the CV database');
+  const res = { existed: !!(saved && saved.existed), added: false, skipped: false, noFile: !cvPath, ai: !!prof };
+  if (job) {
+    if (ctx.seen.has(saved.id) || S.candidates.some(c => c.jobId === job.id && c.talentId === saved.id)) { res.skipped = true; return res; }
+    ctx.seen.add(saved.id);
+    const ins = await db(sb.from('candidates').insert({ ...candidateRow(p), job_id: job.id, stage_id: ctx.firstStage, uploaded_by: me.id, source: 'cv-upload',
+      talent_id: saved.id, cv_path: cvPath, cv_file_name: cvPath ? file.name : null }).select('id').single(), 'add the candidate');
+    await db(sb.from('candidate_contacts').insert({ candidate_id: ins.id, email: p.email || null, phone: p.phone || null }), 'save contact details');
+    res.added = true;
+  }
+  return res;
+}
+async function runPool(items, limit, worker){
+  let next = 0;
+  const lane = async () => { while (next < items.length) { const i = next++; await worker(items[i], i); } };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, lane));
+}
+ACTIONS.upload = () => openUpload(activeJobId);
+ACTIONS['db-upload'] = () => openUpload(null);
+function openUpload(jobId){
+  const job = jobId ? jobById(jobId) : null;
+  if (jobId && !job) return;
   let files = [];
+  const intro = job ? `Adds candidates to ${job.title} and saves every CV to your CV database.` : 'Saves CVs to your CV database, sorted into folders by role. Add them to mandates later.';
   const aiNote = aiState === 'missing'
-    ? `AI scoring isn’t set up, so Hiro reads the name, email, phone and experience from each CV and scores on skill match.${isAdmin() ? ' See Settings to turn on AI.' : ''}`
-    : 'Hiro reads each CV and scores it against this mandate. If AI scoring isn’t available, it scores on skill match instead.';
-  const w = openModal({ title:'Upload CVs', subtitle: esc(`Adds candidates to ${job.title}`), size:'md',
+    ? `AI scoring isn’t set up, so Hiro reads the name, email, phone, experience and skills from each CV itself.${isAdmin() ? ' See Settings to turn on AI.' : ''}`
+    : `Up to ${UPLOAD_CONCURRENCY} CVs are read at the same time. If AI is slow or unavailable, Hiro reads them itself so nothing gets stuck.`;
+  const w = openModal({ title: job ? 'Upload CVs' : 'Upload CVs to the database', subtitle: esc(intro), size:'md',
     body:`<div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose CV files">
         <div class="drop-icon">${icon('upload',22)}</div>
         <p><b>Drop CV files here</b> or click to choose</p>
@@ -1350,12 +1537,12 @@ function openUpload(){
       <div class="alert ${aiState === 'missing' ? 'warn' : 'info'}">${icon('info',16)}<span>${aiNote}</span></div>
       <ul class="file-list" id="fileList"></ul>
       <div id="prog" hidden><div class="progress-row"><span id="progText"></span><span id="progPct"></span></div><div class="bar"><i id="progBar"></i></div></div>`,
-    footer:`<button class="btn btn-ghost" data-close id="upCancel">Cancel</button><button class="btn btn-primary" id="upStart" disabled>Add candidates</button>` });
+    footer:`<button class="btn btn-ghost" data-close id="upCancel">Cancel</button><button class="btn btn-primary" id="upStart" disabled>Add CVs</button>` });
   const drop = $('#drop', w), input = $('#cvInput', w);
   const draw = () => {
-    $('#fileList', w).innerHTML = files.map((f, i) => `<li>${icon('file',15)}<span>${esc(f.name)}</span><small>${Math.max(1, Math.round(f.size / 1024))} KB</small><button class="icon-btn sm" data-rm="${i}" aria-label="Remove ${esc(f.name)}">${icon('x',14)}</button></li>`).join('');
+    $('#fileList', w).innerHTML = files.map((f, i) => `<li data-i="${i}">${icon('file',15)}<span>${esc(f.name)}</span><small class="st">${Math.max(1, Math.round(f.size / 1024))} KB</small><button class="icon-btn sm" data-rm="${i}" aria-label="Remove ${esc(f.name)}">${icon('x',14)}</button></li>`).join('');
     $('#upStart', w).disabled = !files.length;
-    $('#upStart', w).textContent = files.length ? `Add ${files.length} candidate${files.length > 1 ? 's' : ''}` : 'Add candidates';
+    $('#upStart', w).textContent = files.length ? `Add ${files.length} CV${files.length > 1 ? 's' : ''}` : 'Add CVs';
     $$('[data-rm]', w).forEach(b => b.onclick = () => { files.splice(+b.dataset.rm, 1); draw(); });
   };
   const addFiles = list => {
@@ -1375,48 +1562,266 @@ function openUpload(){
   $('#upStart', w).onclick = async () => {
     w._busy = true;
     $('#upStart', w).disabled = true; $('#upCancel', w).disabled = true; drop.style.pointerEvents = 'none';
+    $$('[data-rm]', w).forEach(b => b.remove());
     $('#prog', w).hidden = false;
-    let added = 0, dupCount = 0, failed = 0, aiError = '', firstStage = S.stages[0].id;
-    for (let i = 0; i < files.length; i++) {
-      const f = files[i];
-      $('#progText', w).textContent = `Reading ${f.name}`;
-      $('#progPct', w).textContent = `${i + 1} of ${files.length}`;
-      $('#progBar', w).style.width = `${Math.round((i / files.length) * 100)}%`;
+    const started = Date.now();
+    const firstStage = (S.stages.find(s => s.type === 'active') || S.stages[0] || {}).id;
+    const ctx = { aiOff: false, aiError: '', aiFails: 0, seen: new Set(), firstStage,
+      aiFailed(e){ this.aiError = e.message; this.aiFails++; if (aiState === 'missing' || /took longer|no reply|not set up|isn’t set up/i.test(e.message) || this.aiFails >= 2) this.aiOff = true; } };
+    const tally = { added:0, updated:0, skipped:0, failed:0, noFile:0, ai:0, done:0 };
+    const setStatus = (i, cls, html) => { const li = $(`li[data-i="${i}"] .st`, w); if (li) { li.className = 'st ' + cls; li.innerHTML = html; } };
+    const tick = () => {
+      $('#progText', w).textContent = `${tally.done} of ${files.length} done`;
+      $('#progPct', w).textContent = `${Math.round((Date.now() - started) / 1000)}s`;
+      $('#progBar', w).style.width = `${Math.round((tally.done / files.length) * 100)}%`;
+    };
+    const timer = setInterval(tick, 1000); tick();
+    await runPool(files, UPLOAD_CONCURRENCY, async (f, i) => {
+      setStatus(i, '', `<span class="spin-sm"></span>Reading`);
       try {
-        let text = '';
-        try { text = await extractText(f); } catch (e) {}
-        let prof = null;
-        if (aiState !== 'missing' && !aiError) { try { prof = await aiProfile(text, f.name, job); } catch (e) { aiError = e.message; } }
-        if (!prof) prof = heuristicProfile(text, f.name, job);
-        const ins = await db(sb.from('candidates').insert({ ...candidateRow(prof), job_id: job.id, stage_id: firstStage, uploaded_by: me.id, source: 'cv-upload' }).select('id').single(), 'add the candidate');
-        await db(sb.from('candidate_contacts').insert({ candidate_id: ins.id, email: prof.email || null, phone: prof.phone || null }), 'save contact details');
-        try { await uploadCv(ins.id, job.id, f); } catch (e) { console.warn(e); toast(`${f.name}: candidate added, but the file didn’t upload.`, 'warn'); }
-        if ((await findDuplicates(prof.phone, prof.email, ins.id)).length) dupCount++;
-        added++;
-      } catch (e) { failed++; console.error(f.name, e); if (failed === 1) toast(`${f.name}: ${e.message}`, 'error'); }
-    }
-    $('#progBar', w).style.width = '100%';
-    if (added) logActivity(`${firstName(me.name)} uploaded ${added} CV${added > 1 ? 's' : ''} to ${job.title}`, job.id);
-    w._busy = false; closeModal();
+        const r = await processCv(f, job, ctx);
+        if (r.ai) tally.ai++;
+        if (r.noFile) tally.noFile++;
+        if (r.skipped) { tally.skipped++; setStatus(i, 'warn', 'Already in this mandate'); }
+        else if (r.existed) { tally.updated++; if (r.added) tally.added++; setStatus(i, 'ok', `${icon('check',13)}${job ? 'Added, profile updated' : 'Updated existing profile'}`); }
+        else { tally.added++; setStatus(i, 'ok', `${icon('check',13)}${job ? 'Added' : 'Saved'}`); }
+      } catch (e) {
+        tally.failed++; console.error(f.name, e);
+        setStatus(i, 'bad', esc(e.message.length > 60 ? 'Couldn’t add' : e.message));
+      }
+      tally.done++; tick();
+    });
+    clearInterval(timer); tick();
+    const secs = Math.round((Date.now() - started) / 1000);
+    if (tally.added || tally.updated) logActivity(`${firstName(me.name)} uploaded ${tally.done - tally.failed} CV${tally.done - tally.failed === 1 ? '' : 's'}${job ? ` to ${job.title}` : ' to the CV database'}`, job ? job.id : null);
+    matchCache.clear();
+    w._busy = false;
+    $('#upCancel', w).disabled = false; $('#upCancel', w).textContent = 'Close';
+    $('#upStart', w).textContent = job ? 'Done' : 'Open CV database';
+    $('#upStart', w).disabled = false;
+    $('#upStart', w).onclick = () => { closeModal(); if (!job) go('database'); };
     await refreshNow();
-    if (added) toast(`${added} candidate${added > 1 ? 's' : ''} added to ${(stageById(firstStage) || {}).label || 'the pipeline'}.`, 'success');
-    if (failed) toast(`${failed} file${failed > 1 ? 's' : ''} couldn’t be added.`, 'error');
-    if (dupCount) toast(`${dupCount} of them may already be in your database. Look for the duplicate tag.`, 'warn');
-    if (aiError) toast(`AI scoring didn’t run: ${aiError}. These were scored on skill match.`, isAdmin() ? 'warn' : 'info');
+    const newOnes = tally.added - (job ? tally.updated : 0);
+    const parts = [];
+    if (job) parts.push(`${tally.added} added to ${job.title}`); else parts.push(`${Math.max(0, newOnes)} new profile${newOnes === 1 ? '' : 's'}`);
+    if (tally.updated) parts.push(`${tally.updated} already in your CV database (updated)`);
+    if (tally.skipped) parts.push(`${tally.skipped} already in this mandate`);
+    toast(`Done in ${secs}s: ${parts.join(', ')}.`, 'success');
+    if (tally.failed) toast(`${tally.failed} file${tally.failed > 1 ? 's' : ''} couldn’t be added. Check the list for details.`, 'error');
+    if (tally.noFile) toast(`${tally.noFile} CV file${tally.noFile > 1 ? 's' : ''} couldn’t be stored, but the details were saved.`, 'warn');
+    if (ctx.aiError && tally.ai < tally.done) toast(`AI scoring didn’t run for every CV (${ctx.aiError}). Those were read without AI.`, isAdmin() ? 'warn' : 'info');
   };
 }
-
 ACTIONS['export-csv'] = () => {
   if (!canExport()) return;
   const job = jobById(activeJobId), list = filteredCandidates();
   if (!list.length) { toast('No candidates to export in this view.'); return; }
-  const contact = canContact(), q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  // Values starting with = + - @ are prefixed so spreadsheets can't run them as formulas.
+  const contact = canContact(), q = v => { let t = String(v ?? ''); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
   const head = ['Name', ...(contact ? ['Email', 'Phone'] : []), 'Company', 'Title', 'Experience (yrs)', 'Current CTC (LPA)', 'Expected CTC (LPA)', 'Notice (days)', 'Match score', 'Stage', 'Next interview', 'Skills', 'Added on'];
   const rows = list.map(c => [c.name, ...(contact ? [c.email, c.phone] : []), c.company, c.title, c.expYears || '', c.currentCTC || '', c.expectedCTC || '', c.noticeDays || '', c.atsScore || 0, (stageById(c.stage) || {}).label, c.interviewAt ? fmtDateTime(c.interviewAt) : '', c.matchedSkills.join('; '), fmtDate(c.createdAt)].map(q).join(','));
   downloadBlob(new Blob(['\ufeff' + [head.map(q).join(','), ...rows].join('\r\n')], { type:'text/csv;charset=utf-8' }), `${slug(job.title)}-candidates.csv`);
   logActivity(`${firstName(me.name)} exported ${list.length} candidates from ${job.title}`, job.id);
   toast(`${list.length} candidates exported.`, 'success');
 };
+
+/* =================== CV database & lead lists =================== */
+const TALENT_COLS = 'id,full_name,current_company,current_title,total_exp_years,current_ctc_lpa,expected_ctc_lpa,notice_period_days,skills,profile_category,location,summary,cv_path,cv_file_name,source,uploaded_by,created_at,updated_at';
+const mapTalent = r => ({ id:r.id, name:r.full_name, company:r.current_company || '', title:r.current_title || '', expYears:num(r.total_exp_years),
+  currentCTC:num(r.current_ctc_lpa), expectedCTC:num(r.expected_ctc_lpa), noticeDays:r.notice_period_days || 0, skills:r.skills || [],
+  folder:r.profile_category || 'Uncategorised', location:r.location || '', summary:r.summary || '', cvPath:r.cv_path || '', cvName:r.cv_file_name || '',
+  source:r.source, uploadedBy:r.uploaded_by, createdAt:r.created_at, updatedAt:r.updated_at });
+async function loadTalent(){
+  const rows = await fetchAll(() => sb.from('talent_profiles').select(TALENT_COLS).order('updated_at', { ascending:false }).order('id'), 'load the CV database');
+  S.talent = rows.map(mapTalent);
+  S.talentCount = S.talent.length;
+}
+const talentById = id => (S.talent || []).find(t => t.id === id);
+const matchCache = new Map();
+const dbState = { folder:'all', q:'', sort:'recent', show:100 };
+
+function folderGroups(){
+  const m = new Map();
+  (S.talent || []).forEach(t => { const g = m.get(t.folder) || { name:t.folder, count:0 }; g.count++; m.set(t.folder, g); });
+  return [...m.values()].sort((a, b) => (a.name === 'Uncategorised') - (b.name === 'Uncategorised') || b.count - a.count || a.name.localeCompare(b.name));
+}
+async function renderDatabase(){
+  if (!S.talent) {
+    $('#view').innerHTML = pageHead('CV Database', '') + `<div class="loading-row"><span class="spin-sm"></span>Loading your CV database…</div>`;
+    try { await loadTalent(); } catch (e) { if (view === 'database') $('#view').innerHTML = pageHead('CV Database', '') + emptyBlock('Couldn’t load the CV database', e.message); return; }
+    if (view !== 'database') return;
+  }
+  const all = S.talent, groups = folderGroups();
+  if (dbState.folder !== 'all' && !groups.some(g => g.name === dbState.folder)) dbState.folder = 'all';
+  const folderBtn = (id, label, count) => `<button class="folder${dbState.folder === id ? ' on' : ''}" data-act="db-folder" data-id="${esc(id)}"${dbState.folder === id ? ' aria-pressed="true"' : ''}><span class="tile">${icon('folder',18)}</span><span class="folder-name">${esc(label)}</span><span class="folder-count">${count}</span></button>`;
+  $('#view').innerHTML = pageHead('CV Database', `${all.length} profile${all.length === 1 ? '' : 's'} in ${groups.length} folder${groups.length === 1 ? '' : 's'}. Every CV uploaded to Hiro is kept here, sorted by role.`,
+      `<button class="btn btn-lime" data-act="db-upload">${icon('upload')}Upload CVs</button>`)
+    + (all.length ? `<div class="folders" role="group" aria-label="Folders">${folderBtn('all', 'All profiles', all.length)}${groups.map(g => folderBtn(g.name, g.name, g.count)).join('')}</div>
+      <div class="toolbar">
+        <div class="search">${icon('search',16)}<label class="sr-only" for="dbq">Search the CV database</label><input id="dbq" class="input" type="search" placeholder="Search name, title, company or skill" value="${esc(dbState.q)}"></div>
+        <label class="sr-only" for="dbSort">Sort</label>
+        <select id="dbSort" class="select">${[['recent','Recently updated'],['exp','Most experienced'],['notice','Shortest notice'],['name','Name A–Z']].map(o => `<option value="${o[0]}"${dbState.sort === o[0] ? ' selected' : ''}>${o[1]}</option>`).join('')}</select>
+        <span class="count-note" id="dbCount"></span>
+      </div>
+      <div id="dbList"></div>`
+      : emptyBlock('Your CV database is empty', 'Upload CVs here or into any mandate. Each one is saved and sorted into a folder by role, ready to match against new mandates.', `<button class="btn btn-lime" data-act="db-upload">${icon('upload')}Upload CVs</button>`));
+  if (!all.length) return;
+  $('#dbq').oninput = e => { dbState.q = e.target.value; dbState.show = 100; renderDbList(); };
+  $('#dbSort').onchange = e => { dbState.sort = e.target.value; renderDbList(); };
+  renderDbList();
+}
+function renderDbList(){
+  const box = $('#dbList'); if (!box) return;
+  const q = dbState.q.trim().toLowerCase();
+  let list = S.talent.filter(t => (dbState.folder === 'all' || t.folder === dbState.folder)
+    && (!q || [t.name, t.title, t.company, t.location, t.folder, ...t.skills].join(' ').toLowerCase().includes(q)));
+  const sorters = { recent:(a, b) => new Date(b.updatedAt) - new Date(a.updatedAt), exp:(a, b) => b.expYears - a.expYears, notice:(a, b) => (a.noticeDays || 999) - (b.noticeDays || 999), name:(a, b) => a.name.localeCompare(b.name) };
+  list.sort(sorters[dbState.sort] || sorters.recent);
+  $('#dbCount').textContent = `${list.length} profile${list.length === 1 ? '' : 's'}`;
+  if (!list.length) { box.innerHTML = emptyBlock('No profiles match', 'Try a different search or folder.'); return; }
+  const inPipe = new Map(); S.candidates.forEach(c => { if (c.talentId) inPipe.set(c.talentId, (inPipe.get(c.talentId) || 0) + 1); });
+  box.innerHTML = `<div class="table-wrap"><table class="table"><thead><tr><th>Name</th><th>Folder</th><th class="num">Experience</th><th class="num">Expected CTC</th><th class="num">Notice</th><th>Skills</th><th>Updated</th></tr></thead><tbody>
+    ${list.slice(0, dbState.show).map(t => `<tr class="click" tabindex="0" data-act="open-talent" data-id="${esc(t.id)}">
+      <td><b>${esc(t.name)}</b><span class="cell-sub">${esc([t.title, t.company].filter(Boolean).join(' at ') || 'Details not added')}${t.location ? `, ${esc(t.location)}` : ''}</span></td>
+      <td>${esc(t.folder)}${inPipe.get(t.id) ? `<span class="cell-sub">In ${inPipe.get(t.id)} mandate${inPipe.get(t.id) > 1 ? 's' : ''}</span>` : ''}</td>
+      <td class="num">${t.expYears ? t.expYears + ' yrs' : '—'}</td><td class="num">${lpa(t.expectedCTC)}</td><td class="num">${t.noticeDays ? t.noticeDays + 'd' : '—'}</td>
+      <td><div class="chips">${t.skills.slice(0, 3).map(s => `<span class="chip">${esc(s)}</span>`).join('')}${t.skills.length > 3 ? `<span class="chip chip-more">+${t.skills.length - 3}</span>` : ''}</div></td>
+      <td>${timeAgo(t.updatedAt)}</td></tr>`).join('')}
+    </tbody></table></div>
+    ${list.length > dbState.show ? `<div class="row-actions"><button class="btn btn-ghost" data-act="db-more">Show ${Math.min(100, list.length - dbState.show)} more</button><span class="muted">Showing ${dbState.show} of ${list.length}</span></div>` : ''}`;
+}
+ACTIONS['db-folder'] = id => { dbState.folder = id; dbState.show = 100; renderDatabase(); };
+ACTIONS['db-more'] = () => { dbState.show += 100; renderDbList(); };
+ACTIONS['open-talent'] = id => openTalent(id);
+ACTIONS['talent-from-cand'] = async id => {
+  const c = candById(id); if (!c || !c.talentId) return;
+  closeModal();
+  if (!S.talent) { try { await loadTalent(); } catch (e) { toast(e.message, 'error'); return; } }
+  openTalent(c.talentId);
+};
+
+async function openTalent(id){
+  const t = talentById(id); if (!t) return;
+  let contact = null;
+  if (canContact()) { const r = await sb.from('talent_contacts').select('email,phone').eq('talent_id', id).maybeSingle(); contact = r.data || { email:'', phone:'' }; }
+  const inJobs = S.candidates.filter(c => c.talentId === id);
+  const options = S.jobs.filter(j => j.status !== 'closed' && !inJobs.some(c => c.jobId === j.id));
+  const contactHtml = contact
+    ? `<div class="contact"><span>${icon('mail',15)}${contact.email ? `<a href="mailto:${esc(contact.email)}">${esc(contact.email)}</a>` : 'No email'}</span><span>${icon('phone',15)}${contact.phone ? `<a href="tel:${esc(contact.phone.replace(/[^\d+]/g,''))}">${esc(contact.phone)}</a>` : 'No phone'}</span>${t.cvPath ? `<span>${icon('file',15)}${esc(t.cvName || 'CV attached')}</span>` : ''}</div>`
+    : `<div class="contact locked">${icon('lock',15)}Contact details and the CV are hidden for your role.</div>`;
+  const body = `
+    <div class="facts">
+      <div class="fact"><span>Experience</span><b>${t.expYears ? t.expYears + ' yrs' : '—'}</b></div>
+      <div class="fact"><span>Current CTC</span><b>${lpa(t.currentCTC)}</b></div>
+      <div class="fact"><span>Expected CTC</span><b>${lpa(t.expectedCTC)}</b></div>
+      <div class="fact"><span>Notice</span><b>${t.noticeDays ? t.noticeDays + ' days' : '—'}</b></div>
+    </div>
+    <div class="form-grid">
+      <label class="field"><span>Folder</span><input class="input" id="tFolder" list="tFolderList" value="${esc(t.folder)}"><datalist id="tFolderList">${folderNames().map(f => `<option value="${esc(f)}">`).join('')}</datalist></label>
+      <div class="field"><span>Add to a mandate</span>${options.length ? `<div style="display:flex;gap:8px"><select class="select" id="tJob">${options.map(j => `<option value="${esc(j.id)}">${esc(j.title)} (${esc((clientById(j.clientId) || {}).name || 'No client')})</option>`).join('')}</select><button class="btn btn-primary" id="tAdd">Add</button></div>` : `<small class="help">${S.jobs.length ? 'Already in every open mandate you can see.' : 'No mandates yet.'}</small>`}</div>
+    </div>
+    ${contactHtml}
+    ${t.summary ? `<section class="d-sec"><h3>Summary</h3><p class="eval">${esc(t.summary)}</p></section>` : ''}
+    <section class="d-sec"><h3>Skills</h3><div class="chips">${t.skills.length ? t.skills.map(s => `<span class="chip">${esc(s)}</span>`).join('') : '<span class="muted">No skills recorded.</span>'}</div></section>
+    <section class="d-sec"><h3>Mandates</h3>${inJobs.length ? `<ul class="rows">${inJobs.map(c => { const j = jobById(c.jobId); return `<li><button class="row" data-act="open-cand-from-talent" data-id="${esc(c.id)}"><div class="row-main"><b>${esc(j ? j.title : 'Mandate')}</b><span>${esc((stageById(c.stage) || {}).label || '')}</span></div><div class="row-end">${ring(c.atsScore)}</div></button></li>`; }).join('')}</ul>` : '<p class="muted" style="margin:0">Not in any mandate you can see yet.</p>'}</section>
+    <p class="help" style="margin:0">Added ${fmtDate(t.createdAt)}${userById(t.uploadedBy) ? ` by ${esc(userById(t.uploadedBy).name)}` : ''}. Last updated ${timeAgo(t.updatedAt)}.</p>`;
+  const footer = `${canContact() && t.cvPath ? `<button class="btn btn-ghost" id="tCv">${icon('download',16)}CV</button>` : ''}
+    ${isAdmin() ? `<button class="btn btn-text danger" id="tDel">Delete</button>` : ''}<span class="spacer"></span><button class="btn btn-ghost" data-close>Close</button>`;
+  const w = openModal({ title:t.name, subtitle:esc([t.title, t.company].filter(Boolean).join(' at ') + (t.location ? `, ${t.location}` : '')), body, footer, size:'lg' });
+  $('#tFolder', w).onchange = async e => {
+    const v = e.target.value.trim().slice(0, 60) || 'Uncategorised';
+    if (v === t.folder) return;
+    try { await db(sb.from('talent_profiles').update({ profile_category: v }).eq('id', id), 'move this profile'); }
+    catch (err) { toast(err.message, 'error'); e.target.value = t.folder; return; }
+    t.folder = v; toast(`Moved to ${v}.`, 'success'); if (view === 'database') renderDatabase();
+  };
+  if ($('#tAdd', w)) $('#tAdd', w).onclick = e => busy(e.currentTarget, 'Adding…', async () => {
+    const jobId = $('#tJob', w).value, job = jobById(jobId);
+    const n = await db(sb.rpc('create_leads', { p_job: jobId, p_talent_ids: [id] }), 'add to the mandate');
+    logActivity(`${firstName(me.name)} added ${t.name} to ${job.title} from the CV database`, jobId);
+    matchCache.delete(jobId);
+    w._busy = false; closeModal(); await refreshNow(); openTalent(id);
+    toast(n ? `${t.name} added to ${job.title}.` : `${t.name} is already in ${job.title}.`, 'success', { label:'Open pipeline', run:() => { activeJobId = jobId; go('pipeline'); } });
+  });
+  if ($('#tCv', w)) $('#tCv', w).onclick = e => busy(e.currentTarget, 'Opening…', async () => {
+    const { data, error } = await sb.storage.from(CV_BUCKET).download(t.cvPath);
+    if (error) throw new Error(friendlyError(error, 'download the CV'));
+    downloadBlob(data, t.cvName || `${slug(t.name)}-cv`);
+    logActivity(`${firstName(me.name)} downloaded ${t.name}’s CV from the CV database`);
+  });
+  if ($('#tDel', w)) $('#tDel', w).onclick = async () => {
+    if (!(await confirmDialog(`Delete ${t.name} from the CV database? They stay in any mandate pipelines they’re already in.`))) return;
+    try {
+      await db(sb.from('talent_profiles').delete().eq('id', id), 'delete this profile');
+      if (t.cvPath && !S.candidates.some(c => c.cvPath === t.cvPath)) await sb.storage.from(CV_BUCKET).remove([t.cvPath]);
+    } catch (e) { toast(e.message, 'error'); return; }
+    S.talent = S.talent.filter(x => x.id !== id); S.talentCount = S.talent.length;
+    logActivity(`${firstName(me.name)} deleted ${t.name} from the CV database`);
+    closeModal(); if (view === 'database') renderDatabase(); toast(`${t.name} deleted from the CV database.`);
+  };
+}
+ACTIONS['open-cand-from-talent'] = id => { closeModal(); openCandidate(id); };
+
+/* ---------- lead lists: match a mandate against the CV database ---------- */
+async function getMatches(jobId){
+  if (matchCache.has(jobId)) return matchCache.get(jobId);
+  const rows = await db(sb.rpc('match_talent_for_job', { p_job: jobId, p_limit: 300 }), 'search the CV database');
+  matchCache.set(jobId, rows || []);
+  return rows || [];
+}
+async function loadMatchCount(jobId){
+  if (!canSearch() || !$('#dbMatchCount')) return;
+  try {
+    const rows = await getMatches(jobId);
+    if (activeJobId !== jobId || !$('#dbMatchCount')) return;
+    const n = rows.filter(r => !r.in_pipeline).length;
+    $('#dbMatchCount').textContent = n ? String(n) : '';
+    $('#dbMatchBtn').title = n ? `${n} profile${n > 1 ? 's' : ''} in your CV database match this mandate` : 'No new matches in your CV database';
+  } catch (e) { console.warn(e); }
+}
+ACTIONS['lead-finder'] = id => openLeadFinder(id, false);
+async function openLeadFinder(jobId, auto){
+  const job = jobById(jobId); if (!job || !canSearch()) return;
+  let rows;
+  try { rows = await getMatches(jobId); } catch (e) { if (!auto) toast(e.message, 'error'); return; }
+  const fresh = rows.filter(r => !r.in_pipeline), already = rows.length - fresh.length;
+  if (auto && !fresh.length) return;
+  if (!rows.length) {
+    openModal({ title:'No matches yet', size:'sm', body:`<p class="confirm-text">Nothing in your CV database matches ${esc(job.title)} yet. Upload CVs from the CV Database page and they’ll show up here.</p>`,
+      footer:`<button class="btn btn-ghost" data-close>Close</button><button class="btn btn-lime" data-act="db-upload">${icon('upload',16)}Upload CVs</button>` });
+    return;
+  }
+  const byFolder = new Map(); fresh.forEach(r => byFolder.set(r.profile_category, (byFolder.get(r.profile_category) || 0) + 1));
+  const folders = [...byFolder.entries()].sort((a, b) => b[1] - a[1]);
+  const body = `
+    <div class="lead-summary"><span class="big">${fresh.length}</span><p><b>${fresh.length === 1 ? 'profile' : 'profiles'} in your CV database ${fresh.length === 1 ? 'matches' : 'match'} this mandate.</b><br><span class="muted">${already ? `${already} more ${already === 1 ? 'is' : 'are'} already in the pipeline. ` : ''}Matched on required skills (${esc(job.skills.join(', ') || 'none set')}), experience and role.</span></p></div>
+    ${folders.length ? `<div class="chips">${folders.map(([f, n]) => `<span class="chip">${esc(f)}: ${n}</span>`).join('')}</div>` : ''}
+    <div class="table-wrap"><table class="table lead-table"><thead><tr><th><span class="sr-only">Select</span></th><th>Name</th><th class="num">Exp</th><th class="num">Expected</th><th class="num">Notice</th><th>Matched skills</th><th class="num">Fit</th></tr></thead><tbody>
+      ${rows.map(r => `<tr class="${r.in_pipeline ? 'muted-row' : ''}">
+        <td>${r.in_pipeline ? '' : `<input type="checkbox" class="lfPick" value="${esc(r.talent_id)}"${r.match_score >= 50 ? ' checked' : ''} aria-label="Select ${esc(r.full_name)}">`}</td>
+        <td><b>${esc(r.full_name)}</b><span class="cell-sub">${r.in_pipeline ? 'Already in this pipeline' : esc([r.current_title, r.current_company].filter(Boolean).join(' at ') || r.profile_category)}</span></td>
+        <td class="num">${num(r.total_exp_years) ? num(r.total_exp_years) + ' yrs' : '—'}</td><td class="num">${lpa(r.expected_ctc_lpa)}</td><td class="num">${r.notice_period_days ? r.notice_period_days + 'd' : '—'}</td>
+        <td><div class="chips">${(r.matched_skills || []).map(s => `<span class="chip chip-good">${esc(s)}</span>`).join('') || '<span class="muted">Role match</span>'}</div></td>
+        <td class="num">${ring(r.match_score)}</td></tr>`).join('')}
+    </tbody></table></div>`;
+  const w = openModal({ title:`Leads for ${job.title}`, subtitle: esc((clientById(job.clientId) || {}).name || ''), size:'lg', body,
+    footer:`${fresh.length ? `<label class="check-inline"><input type="checkbox" id="lfAll"> Select all</label>` : ''}<span class="spacer"></span><button class="btn btn-ghost" data-close>Close</button>${fresh.length ? `<button class="btn btn-primary" id="lfGo"></button>` : ''}` });
+  if (!fresh.length) return;
+  const sync = () => { const n = $$('.lfPick:checked', w).length; $('#lfGo', w).textContent = n ? `Create ${n} lead${n > 1 ? 's' : ''}` : 'Select profiles'; $('#lfGo', w).disabled = !n; $('#lfAll', w).checked = n === fresh.length; };
+  $$('.lfPick', w).forEach(cb => cb.onchange = sync);
+  $('#lfAll', w).onchange = e => { $$('.lfPick', w).forEach(cb => { cb.checked = e.target.checked; }); sync(); };
+  sync();
+  $('#lfGo', w).onclick = e => busy(e.currentTarget, 'Creating leads…', async () => {
+    const ids = $$('.lfPick:checked', w).map(cb => cb.value);
+    const n = await db(sb.rpc('create_leads', { p_job: jobId, p_talent_ids: ids }), 'create the leads');
+    logActivity(`${firstName(me.name)} created ${n} lead${n === 1 ? '' : 's'} for ${job.title} from the CV database`, jobId);
+    matchCache.delete(jobId);
+    w._busy = false; closeModal();
+    activeJobId = jobId; await refreshNow(); go('pipeline');
+    const st = S.stages.find(s => s.type === 'active') || S.stages[0];
+    toast(`${n} lead${n === 1 ? '' : 's'} added to ${st ? st.label : 'the pipeline'}.`, 'success');
+  });
+}
 
 /* =================== stages =================== */
 ACTIONS['edit-stage'] = id => openStageForm(id);
@@ -1467,7 +1872,7 @@ ACTIONS['job-filter'] = id => { jobFilter = id; renderJobs(); };
 ACTIONS['new-job'] = () => openJobForm(null);
 ACTIONS['edit-job'] = id => openJobForm(id);
 async function removeCvFiles(cands){
-  const paths = cands.map(c => c.cvPath).filter(Boolean);
+  const paths = cands.filter(c => !c.talentId).map(c => c.cvPath).filter(Boolean); // the CV database keeps shared files
   for (let i = 0; i < paths.length; i += 100) { const { error } = await sb.storage.from(CV_BUCKET).remove(paths.slice(i, i + 100)); if (error) console.warn('cv cleanup', error); }
 }
 ACTIONS['del-job'] = async id => {
@@ -1509,6 +1914,7 @@ function jobCard(j){
       <div class="avatars" title="${esc(recs.map(r => r.name).join(', ') || 'No recruiters assigned')}">${recs.length ? recs.slice(0, 4).map(r => `<span class="avatar">${esc(initials(r.name))}</span>`).join('') : '<span class="none">No recruiters</span>'}</div>
       <div class="page-actions">
         ${isAdmin() ? `<button class="icon-btn sm" data-act="edit-job" data-id="${esc(j.id)}" aria-label="Edit ${esc(j.title)}" title="Edit">${icon('edit',15)}</button><button class="icon-btn sm" data-act="del-job" data-id="${esc(j.id)}" aria-label="Delete ${esc(j.title)}" title="Delete">${icon('trash',15)}</button>` : ''}
+        ${canSearch() ? `<button class="btn btn-ghost btn-sm" data-act="lead-finder" data-id="${esc(j.id)}" title="Find matching profiles in the CV database">${icon('folder',15)}Leads</button>` : ''}
         <button class="btn btn-ghost btn-sm" data-act="open-pipeline" data-id="${esc(j.id)}">Open pipeline</button>
       </div>
     </div>
@@ -1557,7 +1963,9 @@ function openJobForm(id){
     else { const ins = await db(sb.from('jobs').insert({ ...row, created_by: me.id }).select('id').single(), 'create the mandate'); jobId = ins.id; activeJobId = jobId; }
     await setJobRecruiters(jobId, recs);
     logActivity(`${firstName(me.name)} ${id ? 'updated' : 'created'} the mandate ${title}`, jobId);
+    matchCache.delete(jobId);
     w._busy = false; closeModal(); await refreshNow(); toast(id ? 'Mandate saved.' : `${title} created.`, 'success');
+    if (!id && canSearch()) openLeadFinder(jobId, true);
   }, $('#jError', w));
 }
 
@@ -1698,7 +2106,7 @@ function renderTeam(){
           <td><div class="who"><span class="avatar">${esc(initials(u.name))}</span><div><b>${esc(u.name)}${u.id === me.id ? ' <span class="muted">(you)</span>' : ''}</b><span class="cell-sub">${esc(u.email || '')}</span></div></div></td>
           <td><span class="badge ${admin ? 'b-brand' : 'b-muted'}">${admin ? 'Admin' : 'Recruiter'}</span></td>
           <td>${admin ? '<span class="muted">All mandates</span>' : jobs.length ? esc(jobs.map(j => j.title).join(', ')) : '<span class="muted">None assigned</span>'}</td>
-          <td><div class="perm">${tag(admin || u.canDownloadCV, 'Contacts and CVs')}${tag(admin || u.canExportCSV, 'Export')}${tag(admin || u.canViewCommercials, 'Fees')}</div></td>
+          <td><div class="perm">${tag(admin || u.canDownloadCV, 'Contacts and CVs')}${tag(admin || u.canExportCSV, 'Export')}${tag(admin || u.canViewCommercials, 'Fees')}${tag(admin || u.canSearch, 'CV database')}</div></td>
           <td><span class="badge ${u.active ? 'b-good' : 'b-warn'}">${u.active ? 'Active' : 'Not active'}</span></td>
           <td class="actions">${u.active ? `<button class="icon-btn sm" data-act="edit-user" data-id="${esc(u.id)}" aria-label="Edit ${esc(u.name)}" title="Edit">${icon('edit',15)}</button>` : `<button class="btn btn-primary btn-sm" data-act="edit-user" data-id="${esc(u.id)}">Switch on</button>`}</td>
         </tr>`; }).join('')}</tbody></table></div>`;
@@ -1719,6 +2127,7 @@ function openUserForm(id){
       ${perm('canDownloadCV', 'See contact details and download CVs', 'Without this, phone numbers and emails are hidden.')}
       ${perm('canExportCSV', 'Export candidates to CSV', 'Downloads the pipeline as a spreadsheet.')}
       ${perm('canViewCommercials', 'See clients, fees and placements', 'Shows the Clients and Placements pages.')}
+      ${perm('canSearch', 'Use the CV database and create leads', 'Shows every saved CV profile. Contact details still need the first permission.')}
     </div></div>
     <div class="field" id="uJobsField"><span>Mandates</span>${S.jobs.length ? `<div class="check-list">${S.jobs.map(j => `<label class="check"><input type="checkbox" class="uJob" value="${esc(j.id)}"${j.assignedRecruiterIds.includes(u.id) ? ' checked' : ''}><div><b>${esc(j.title)}</b><small>${esc((clientById(j.clientId) || {}).name || '')}</small></div></label>`).join('')}</div>` : '<small class="help">No mandates yet.</small>'}</div>
     <p class="help" id="uAdminNote" style="margin:0">Admins can see and change everything, so permissions and mandates don’t apply.</p>
@@ -1732,7 +2141,7 @@ function openUserForm(id){
     const active = $('#uActive', w) ? $('#uActive', w).checked : true;
     if (!name) throw new Error('Enter a name.');
     await db(sb.from('agency_users').update({ full_name: name, role, is_active: active,
-      can_download_cv: $('#canDownloadCV', w).checked, can_export_csv: $('#canExportCSV', w).checked, can_view_commercials: $('#canViewCommercials', w).checked }).eq('id', u.id), 'save this team member');
+      can_download_cv: $('#canDownloadCV', w).checked, can_export_csv: $('#canExportCSV', w).checked, can_view_commercials: $('#canViewCommercials', w).checked, can_search_database: $('#canSearch', w).checked }).eq('id', u.id), 'save this team member');
     const wanted = role === 'admin' ? [] : $$('.uJob:checked', w).map(x => x.value);
     const current = S.jobs.filter(j => j.assignedRecruiterIds.includes(u.id)).map(j => j.id);
     const toAdd = wanted.filter(x => !current.includes(x)), toRemove = current.filter(x => !wanted.includes(x));
@@ -1750,35 +2159,59 @@ function renderSettings(){
   const st = { ok:['b-good','Working'], missing:['b-warn','Not set up'], unknown:['b-muted','Not checked'] }[aiState] || ['b-muted','Not checked'];
   $('#view').innerHTML = pageHead('Settings', 'AI scoring and your data.') + `<div class="settings-grid">
     <section class="panel">
-      <div class="panel-head"><div><h2>AI CV scoring</h2><p class="page-sub">AI reads each uploaded CV for name, contact details, salary, notice period and fit. It runs inside your Supabase project, so the AI key never reaches anyone’s browser. Without it, Hiro scores on skills and experience.</p></div><span class="badge ${st[0]}">${st[1]}</span></div>
+      <div class="panel-head"><div style="display:flex;gap:12px;align-items:flex-start"><span class="tile">${icon('spark',18)}</span><div><h2>AI CV scoring</h2><p class="page-sub">AI reads each CV for role, experience, salary, notice period and fit, and picks its folder in the CV database. It runs inside your Supabase project, so the key never reaches anyone’s browser. Contact details are removed before CV text is sent.</p></div></div><span class="badge ${st[0]}" id="aiBadge">${st[1]}</span></div>
       <div class="panel-body">
-        <ol class="steps">
-          <li>In your Supabase project, open <b>Edge Functions</b> and create a function named <span class="code">score-cv</span>. Paste in the code from the <span class="code">score-cv-function.ts</span> file and deploy it.</li>
-          <li>In the Edge Functions secrets, add <span class="code">AI_API_KEY</span> (your Gemini, OpenAI, Groq or DeepSeek key) and <span class="code">AI_PROVIDER</span> (<span class="code">gemini</span>, <span class="code">openai</span>, <span class="code">groq</span> or <span class="code">deepseek</span>). <span class="code">AI_MODEL</span> is optional.</li>
-          <li>Come back here and test it.</li>
-        </ol>
-        <div class="row-actions"><button class="btn btn-primary" data-act="ai-test">Test AI scoring</button><span id="aiResult" class="ai-result" role="status"></span></div>
+        <div class="row-actions" style="margin-top:0"><button class="btn btn-primary" data-act="ai-test">Test AI scoring</button><span class="muted">Takes a few seconds. You’ll see each step.</span></div>
+        <ul class="steps-status" id="aiSteps" aria-live="polite"></ul>
+        <details style="margin-top:16px"><summary style="cursor:pointer;font-weight:600">Setup and speed</summary>
+          <ol class="steps" style="margin-top:12px">
+            <li>In Supabase, open <b>Edge Functions</b> and open (or create) the function named <span class="code">score-cv</span>. Replace its code with <span class="code">score-cv-function.ts</span> and deploy.</li>
+            <li>In <b>Edge Functions → Secrets</b>, set <span class="code">AI_API_KEY</span> and <span class="code">AI_PROVIDER</span> (<span class="code">gemini</span>).</li>
+            <li>For the fastest scoring, set <span class="code">AI_MODEL</span> to <span class="code">gemini-3.5-flash-lite</span>.</li>
+          </ol>
+        </details>
       </div>
     </section>
     <section class="panel">
       <div class="panel-head"><div><h2>Your data</h2><p class="page-sub">Everything is saved in your Supabase database and shared live with your team. Supabase keeps its own backups; you can also download a copy here.</p></div><span class="badge b-good"><span class="sync-dot" style="margin:0"></span> Connected</span></div>
       <div class="panel-body">
         <div class="row-actions" style="margin-top:0"><button class="btn btn-ghost" data-act="export-backup">${icon('download',16)}Download a copy</button></div>
-        <p class="help" style="margin:12px 0 0">The copy includes clients, mandates, candidates and contact details as a JSON file. CV files stay in Supabase storage.</p>
+        <p class="help" style="margin:12px 0 0">The copy includes clients, mandates and candidates as a JSON file. Contact details are included only if you can see them. CV files stay in Supabase storage.</p>
       </div>
     </section></div>`;
 }
 ACTIONS['ai-test'] = async (id, el) => {
-  const out = $('#aiResult');
-  out.className = 'ai-result'; out.textContent = 'Testing…';
-  await busy(el, 'Testing…', async () => {
+  const out = $('#aiSteps'); if (!out) return;
+  const line = (cls, text) => `<li class="${cls}">${cls === 'ok' ? icon('check',15) : cls === 'bad' ? icon('x',15) : cls === 'tip' ? icon('info',15) : '<span class="spin-sm"></span>'}<span>${text}</span></li>`;
+  const setBadge = ok => { const b = $('#aiBadge'); if (b) { b.className = 'badge ' + (ok ? 'b-good' : 'b-warn'); b.textContent = ok ? 'Working' : 'Not working'; } };
+  el.disabled = true;
+  let done = '';
+  out.innerHTML = line('wait', 'Connecting to the score-cv function…');
+  try {
+    let ping;
+    try { ping = await invokeAi({ ping: true }, 15000); }
+    catch (e) {
+      const old = /empty or too long/i.test(e.message);
+      out.innerHTML = line('bad', old ? 'Your score-cv function is the older version. In Supabase, replace its code with the new score-cv-function.ts and deploy, then test again.' : `Couldn’t reach the score-cv function: ${esc(e.message)}`);
+      setBadge(false); return;
+    }
+    done = line('ok', `Function connected (${esc(ping.provider)}, model ${esc(ping.model)}).`);
+    if (!ping.keySet) { aiState = 'missing'; out.innerHTML = done + line('bad', 'The AI_API_KEY secret is missing. Add it in Edge Functions → Secrets.'); setBadge(false); return; }
+    const t0 = Date.now();
+    out.innerHTML = done + line('wait', `Asking ${esc(ping.model)} a test question… <b id="aiTimer">0s</b>`);
+    const timer = setInterval(() => { const t = $('#aiTimer'); if (t) t.textContent = Math.round((Date.now() - t0) / 1000) + 's'; }, 500);
     try {
       const r = await aiComplete('Reply with only this JSON and nothing else: {"ok": true}');
       const j = parseJSONLoose(r.text); if (!j || j.ok !== true) throw new Error('Unexpected reply from the AI');
-      out.className = 'ai-result ok'; out.textContent = `Working${r.model ? ` with ${r.model}` : ''}. New CV uploads will use AI scoring.`;
-    } catch (e) { out.className = 'ai-result bad'; out.textContent = `Not working yet: ${e.message}`; }
-  });
-  const badge = $('.panel .badge'); if (badge) { badge.className = 'badge ' + (aiState === 'ok' ? 'b-good' : 'b-warn'); badge.textContent = aiState === 'ok' ? 'Working' : 'Not set up'; }
+      const secs = ((Date.now() - t0) / 1000).toFixed(1);
+      done += line('ok', `The AI replied in ${secs}s. CV scoring is working.`);
+      if (secs > 6) done += line('tip', `That’s on the slow side. For faster uploads, set the AI_MODEL secret to gemini-3.5-flash-lite.`);
+      out.innerHTML = done; setBadge(true);
+    } catch (e) {
+      out.innerHTML = done + line('bad', `The AI didn’t answer: ${esc(e.message)}`) + (/model/i.test(e.message) ? line('tip', 'Change the AI_MODEL secret to a current model, such as gemini-3.5-flash-lite.') : '');
+      setBadge(false);
+    } finally { clearInterval(timer); }
+  } finally { el.disabled = false; }
 };
 ACTIONS['export-backup'] = () => {
   const data = { exportedAt: nowISO(), stages: S.stages, clients: S.clients.filter(c => c.full), jobs: S.jobs, candidates: S.candidates.map(({ placement, ...c }) => c), team: S.users.map(({ id, name, email, role, active }) => ({ id, name, email, role, active })) };
